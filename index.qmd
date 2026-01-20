@@ -15,8 +15,9 @@ Advanced spatial analysis and data science for urban planning and public policy.
 - **Final Project:** Capstone modeling challenge
 
 ## About Me
-[Students will customize this section]
+[My name is Wil Rantala. I'm from Chicago and got my BA in Environment and Development from McGill University. Currently I am pursuing my Master of City Planning at the University of Pennsylvania with a concentration in Transportation Planning.
+I'm taking this course to advance my data science skills to be a more rounded, technical profesisonal in the planning world. Mainly, I want to feel comfortable in R!]
 
 ## Contact
-- Email: [your.email@upenn.edu]
-- GitHub: [@your-username]
+- Email: [wrantala@upenn.edu]
+- GitHub: [@wrantala11]
