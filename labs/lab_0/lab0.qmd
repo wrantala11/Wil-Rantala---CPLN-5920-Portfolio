@@ -110,7 +110,7 @@ Let's fix a problematic column name:
 
 ```{r rename-columns}
 # Rename 'Year of manufacture' to year
-
+car_data <- car_data%>% rename(year = "Year of manufacture")
 
 # Check that it worked
 names(car_data)
@@ -118,7 +118,7 @@ names(car_data)
 
 **Question:** Why did we need backticks around `Year of manufacture` but not around `year`?
 
-**Your answer:** [YOUR ANSWER]
+**Your answer:** 'Year of manufacture' has spaces in it, so the backticks are required so that R knows to consider it as one column name. Year didn't need backticks because it's one word.
 
 # Exercise 3: Creating New Columns
 
@@ -126,22 +126,33 @@ names(car_data)
 
 ```{r calculate-age}
 # Create an 'age' column (2025 minus year of manufacture)
+car_data <- car_data%>%
+  mutate(age = c(2025 - .$year))
 
 
 # Create a mileage_per_year column  
-
+car_data <- car_data%>%
+  mutate(mileage_per_year = c(.$Mileage / .$age))
 
 # Look at your new columns
 #select(car_data, Model, year, age, Mileage, mileage_per_year)
+selected_car_data <- car_data%>%
+  select(Model, year, age, Mileage, mileage_per_year)
+selected_car_data
 ```
 
 ## 3.2 Categorize Cars
 
 ```{r categorize-cars}
 # Create a price_category column where if price is < 15000, its is coded as budget, between 15000 and 30000 is midrange and greater than 30000 is mid-range (use case_when)
-
+car_data <- car_data%>%
+  mutate(price_category = case_when(Price < 15000 ~ 'budget',
+                                    Price <= 30000 ~ 'midrange',
+                                    TRUE ~ 'high-end'
+                                    ))
 
 # Check your categories select the new column and show it
+select(car_data, price_category)
 ```
 
 # Exercise 4: Filtering Practice
@@ -150,31 +161,31 @@ names(car_data)
 
 ```{r basic-filtering}
 # Find all Toyota cars
-
+filter(car_data, Manufacturer == 'Toyota')
 
 # Find cars with mileage less than 30,000
-
+filter(car_data, Mileage < 30000)
 
 # Find luxury cars (from price category) with low mileage
-
+filter(car_data, Mileage < 30000, price_category == 'high-end')
 ```
 
 ## 4.2 Multiple Conditions
 
 ```{r multiple-conditions}
 # Find cars that are EITHER Honda OR Nissan
-
+filter(car_data, Manufacturer == 'Honda' | Manufacturer == 'Nissan')
 
 # Find cars with price between $20,000 and $35,000
-
+filter(car_data, Price >= 20000 & Price <= 35000)
 
 # Find diesel cars less than 10 years old
-
+filter(car_data, `Fuel type` == 'Diesel' & age < 10)
 ```
 
 **Question:** How many diesel cars are less than 10 years old?
 
-**Your answer:** [YOUR ANSWER]
+**Your answer:** There are 2,040 diesel cars less than 10 years old in this dataset
 
 # Exercise 5: Grouping and Summarizing
 
@@ -189,9 +200,17 @@ avg_price_by_brand <- car_data %>%
 avg_price_by_brand
 
 # Calculate average mileage by fuel type
+avg_mileage_by_fuel <- car_data %>%
+  group_by(`Fuel type`) %>%
+  summarize(avg_mileage = mean(Mileage, na.rm = TRUE))
 
-
+avg_mileage_by_fuel
 # Count cars by manufacturer
+count_vehicles_by_brand <- car_data%>%
+  group_by(Manufacturer) %>%
+  summarize(total_vehicles = n(), .groups = 'drop')
+            
+count_vehicles_by_brand
 
 ```
 
@@ -199,7 +218,10 @@ avg_price_by_brand
 
 ```{r categorical-summaries}
 # Frequency table for price categories
+pricecat_freq <- car_data %>%
+  count(price_category)
 
+pricecat_freq
 ```
 
 
