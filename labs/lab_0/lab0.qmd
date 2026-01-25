@@ -64,7 +64,7 @@ head(car_data)
 - Rows: 50,000
 - Columns: 7  
 - Variable types: There are both numeric (double) and character variable types
-- Problematic names: R doesn't read spaces, so names like "Engine size", "Fuel type", and "Year of manufacture" may cause issues
+- Problematic names: R doesn't read spaces and will assess 'engine' and 'size' separately, so names like "Engine size", "Fuel type", and "Year of manufacture" may cause issues
 
 
 ## 1.2 Tibble vs Data Frame
