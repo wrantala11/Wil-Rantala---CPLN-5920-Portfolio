@@ -6,11 +6,11 @@ website:
   title: "Wil Rantala - MUSA 5080 Portfolio"
   navbar:
     left:
-      - href: index.qmd
+      - href: lab0.qmd
         text: Home
       - text: Labs
         menu:
-          - href: labs/lab_0/index.qmd
+          - href: labs/lab_0/lab0.qmd
             text: "Lab 0: dplyr Basics"
 format:
   html:
