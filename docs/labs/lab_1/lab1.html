@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 <meta name="author" content="Wil Rantala">
-<meta name="dcterms.date" content="2026-02-03">
+<meta name="dcterms.date" content="2026-02-08">
 
 <title>Lab 1: Census Data Quality for Policy Decisions – Wil Rantala - MUSA 5080 Portfolio</title>
 <style>
@@ -139,6 +139,10 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     <a class="dropdown-item" href="../../labs/lab_0/index.html">
  <span class="dropdown-text">Lab 0: dplyr Basics</span></a>
   </li>  
+        <li>
+    <a class="dropdown-item" href="../../labs/lab_1/lab1.html">
+ <span class="dropdown-text">Lab 1: Census Data Exploration</span></a>
+  </li>  
     </ul>
   </li>
 </ul>
@@ -221,7 +225,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     <div>
     <div class="quarto-title-meta-heading">Published</div>
     <div class="quarto-title-meta-contents">
-      <p class="date">February 3, 2026</p>
+      <p class="date">February 8, 2026</p>
     </div>
   </div>
   
@@ -269,12 +273,15 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <h1>Setup</h1>
 <div class="cell">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Load required packages (hint: you need tidycensus, tidyverse, and knitr)</span></span>
-<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Set your Census API key</span></span>
-<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a><span class="co"># Choose your state for analysis - assign it to a variable called my_state</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidycensus)</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidyverse)</span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(knitr)</span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a><span class="co"># Set your Census API key</span></span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a><span class="co"># Choose your state for analysis - assign it to a variable called my_state</span></span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>my_state <span class="ot">&lt;-</span> <span class="st">"Illinois"</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
-<p><strong>State Selection:</strong> I have chosen <strong>[Your State Name]</strong> for this analysis because: [Brief explanation of why you chose this state]</p>
+<p><strong>State Selection:</strong> I have chosen <strong>Illinois</strong> for this analysis because: I am from Chicago and am interested in learning more about general Census data information for my home state! Illinois has some very different regions – Chicago (Cook County) and surrounding counties are quite different from the rest of the state, so there should be a good variety of trends.</p>
 </section>
 <section id="part-2-county-level-resource-assessment" class="level1">
 <h1>Part 2: County-Level Resource Assessment</h1>
@@ -287,10 +294,36 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <div class="cell">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Write your get_acs() code here</span></span>
 <span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Clean the county names to remove state name and "County" </span></span>
-<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Hint: use mutate() with str_remove()</span></span>
-<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a><span class="co"># Display the first few rows</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>county_data <span class="ot">&lt;-</span> <span class="fu">get_acs</span>(</span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">geography =</span> <span class="st">"county"</span>,</span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">variables =</span> <span class="fu">c</span>(</span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>    <span class="at">med_income =</span> <span class="st">"B19013_001"</span>, </span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>    <span class="at">tot_pop =</span> <span class="st">"B01003_001"</span></span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>    ),</span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a>  <span class="at">state =</span> my_state,</span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a>  <span class="at">year =</span> <span class="dv">2022</span>,</span>
+<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a>  <span class="at">output =</span> <span class="st">"wide"</span></span>
+<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a><span class="co"># Clean the county names to remove state name and "County" </span></span>
+<span id="cb3-15"><a href="#cb3-15" aria-hidden="true" tabindex="-1"></a><span class="co"># Hint: use mutate() with str_remove()</span></span>
+<span id="cb3-16"><a href="#cb3-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-17"><a href="#cb3-17" aria-hidden="true" tabindex="-1"></a>county_data <span class="ot">&lt;-</span> county_data <span class="sc">%&gt;%</span></span>
+<span id="cb3-18"><a href="#cb3-18" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">county_name =</span> <span class="fu">str_remove</span>(NAME, <span class="fu">paste0</span>(<span class="st">", "</span>, <span class="st">"Illinois"</span>)))</span>
+<span id="cb3-19"><a href="#cb3-19" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-20"><a href="#cb3-20" aria-hidden="true" tabindex="-1"></a><span class="co"># Display the first few rows</span></span>
+<span id="cb3-21"><a href="#cb3-21" aria-hidden="true" tabindex="-1"></a><span class="fu">glimpse</span>(county_data)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Rows: 102
+Columns: 7
+$ GEOID       &lt;chr&gt; "17001", "17003", "17005", "17007", "17009", "17011", "170…
+$ NAME        &lt;chr&gt; "Adams County, Illinois", "Alexander County, Illinois", "B…
+$ med_incomeE &lt;dbl&gt; 63767, 40365, 58617, 80502, 64760, 64165, 88059, 61539, 64…
+$ med_incomeM &lt;dbl&gt; 2375, 8008, 5412, 3759, 7747, 3293, 7593, 3437, 5585, 1625…
+$ tot_popE    &lt;dbl&gt; 65583, 5261, 16750, 53459, 6334, 33203, 4472, 15594, 12955…
+$ tot_popM    &lt;dbl&gt; NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA…
+$ county_name &lt;chr&gt; "Adams County", "Alexander County", "Bond County", "Boone …</code></pre>
+</div>
 </div>
 </section>
 <section id="data-quality-assessment" class="level2">
@@ -300,10 +333,20 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 - Low Confidence: MOE &gt; 10% - Create a flag for unreliable estimates (MOE &gt; 10%)</p>
 <p><strong>Hint:</strong> Use <code>mutate()</code> with <code>case_when()</code> for the categories.</p>
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Calculate MOE percentage and reliability categories using mutate()</span></span>
-<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Create a summary showing count of counties in each reliability category</span></span>
-<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Hint: use count() and mutate() to add percentages</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Calculate MOE percentage and reliability categories using mutate()</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>county_data <span class="ot">&lt;-</span> county_data <span class="sc">%&gt;%</span></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">MOE_percent =</span> (med_incomeM <span class="sc">/</span> med_incomeE) <span class="sc">*</span> <span class="dv">100</span>)</span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>county_data <span class="ot">&lt;-</span> county_data <span class="sc">%&gt;%</span></span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">reliability =</span> <span class="fu">case_when</span>(MOE_percent <span class="sc">&lt;</span> <span class="dv">5</span> <span class="sc">~</span> <span class="st">'High Confidence'</span>,</span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>                                 MOE_percent <span class="sc">&lt;=</span> <span class="dv">10</span> <span class="sc">~</span> <span class="st">'Moderate Confidence'</span>,</span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a>                                 <span class="cn">TRUE</span> <span class="sc">~</span> <span class="st">'Low Confidence'</span>))</span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a><span class="co"># Create a summary showing count of counties in each reliability category</span></span>
+<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a><span class="co"># Hint: use count() and mutate() to add percentages</span></span>
+<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a>reliability_summary <span class="ot">&lt;-</span> county_data <span class="sc">%&gt;%</span></span>
+<span id="cb5-13"><a href="#cb5-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">count</span>(reliability, <span class="at">name =</span> <span class="st">"counties"</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb5-14"><a href="#cb5-14" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">percent =</span> counties <span class="sc">/</span> <span class="fu">sum</span>(counties) <span class="sc">*</span> <span class="dv">100</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 </section>
 <section id="high-uncertainty-counties" class="level2">
@@ -312,12 +355,79 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <p><strong>Requirements:</strong> - Sort by MOE percentage (highest first) - Select the top 5 counties - Display: county name, median income, margin of error, MOE percentage, reliability category - Format as a professional table using <code>kable()</code></p>
 <p><strong>Hint:</strong> Use <code>arrange()</code>, <code>slice()</code>, and <code>select()</code> functions.</p>
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Create table of top 5 counties by MOE percentage</span></span>
-<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Format as table with kable() - include appropriate column names and caption</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Create table of top 5 counties by MOE percentage</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>top5MOE <span class="ot">&lt;-</span> county_data <span class="sc">%&gt;%</span></span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">arrange</span>(<span class="fu">desc</span>(MOE_percent)) <span class="sc">%&gt;%</span></span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>    <span class="fu">slice</span>(<span class="dv">1</span><span class="sc">:</span><span class="dv">5</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>      <span class="fu">select</span>(county_name, med_incomeE, med_incomeM, MOE_percent, reliability)</span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a><span class="co"># Format as table with kable() - include appropriate column names and caption</span></span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a><span class="fu">kable</span>(top5MOE, <span class="at">col.names =</span> <span class="fu">c</span>(</span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a>  <span class="st">"County"</span>, <span class="st">"Median Household Income"</span>, <span class="st">"Margin of Error"</span>, <span class="st">"MOE %"</span>, <span class="st">"Reliability"</span>),</span>
+<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a>  <span class="at">caption =</span> <span class="st">"Five IL Counties with the Highest MOE"</span></span>
+<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output-display">
+<table class="caption-top table table-sm table-striped small">
+<caption>Five IL Counties with the Highest MOE</caption>
+<colgroup>
+<col style="width: 20%">
+<col style="width: 29%">
+<col style="width: 19%">
+<col style="width: 11%">
+<col style="width: 18%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;">County</th>
+<th style="text-align: right;">Median Household Income</th>
+<th style="text-align: right;">Margin of Error</th>
+<th style="text-align: right;">MOE %</th>
+<th style="text-align: left;">Reliability</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">Hardin County</td>
+<td style="text-align: right;">53026</td>
+<td style="text-align: right;">11006</td>
+<td style="text-align: right;">20.75586</td>
+<td style="text-align: left;">Low Confidence</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Pope County</td>
+<td style="text-align: right;">57582</td>
+<td style="text-align: right;">11811</td>
+<td style="text-align: right;">20.51162</td>
+<td style="text-align: left;">Low Confidence</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Alexander County</td>
+<td style="text-align: right;">40365</td>
+<td style="text-align: right;">8008</td>
+<td style="text-align: right;">19.83897</td>
+<td style="text-align: left;">Low Confidence</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Moultrie County</td>
+<td style="text-align: right;">72833</td>
+<td style="text-align: right;">9402</td>
+<td style="text-align: right;">12.90898</td>
+<td style="text-align: left;">Low Confidence</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Lawrence County</td>
+<td style="text-align: right;">55811</td>
+<td style="text-align: right;">6777</td>
+<td style="text-align: right;">12.14277</td>
+<td style="text-align: left;">Low Confidence</td>
+</tr>
+</tbody>
+</table>
+</div>
 </div>
 <p><strong>Data Quality Commentary:</strong></p>
 <p>[Write 2-3 sentences explaining what these results mean for algorithmic decision-making. Consider: Which counties might be poorly served by algorithms that rely on this income data? What factors might contribute to higher uncertainty?]</p>
+<p>For these counties with such poor data reliability, algorithmic decision-making may over or underestimate allocated resources/attention/program allocation. For instance, Pope and Moultrie Counties have estimated median incomes 20k apart, but their near 10k MOEs are great enough that their actual median incomes could feasibly be very similar. The high MOEs could have been caused by low population (and thus low sample sizes), or by large variability in the data.</p>
 </section>
 </section>
 <section id="part-3-neighborhood-level-analysis" class="level1">
@@ -327,41 +437,179 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <p><strong>Your Task:</strong> Select 2-3 counties from your reliability analysis for detailed tract-level study.</p>
 <p><strong>Strategy:</strong> Choose counties that represent different reliability levels (e.g., 1 high confidence, 1 moderate, 1 low confidence) to compare how data quality varies.</p>
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Use filter() to select 2-3 counties from your county_reliability data</span></span>
-<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="co"># Store the selected counties in a variable called selected_counties</span></span>
-<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Display the selected counties with their key characteristics</span></span>
-<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a><span class="co"># Show: county name, median income, MOE percentage, reliability category</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Use filter() to select 2-3 counties from your county_reliability data</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="co"># Store the selected counties in a variable called selected_counties</span></span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>selected_counties <span class="ot">&lt;-</span> county_data <span class="sc">%&gt;%</span></span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(county_name <span class="sc">==</span> <span class="st">"Cook County"</span> <span class="sc">|</span> county_name <span class="sc">==</span> <span class="st">"Pulaski County"</span> <span class="sc">|</span> county_name <span class="sc">==</span> <span class="st">"Effingham County"</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(county_name, med_incomeE, MOE_percent, reliability)</span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a><span class="co"># Display the selected counties with their key characteristics</span></span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a><span class="co"># Show: county name, median income, MOE percentage, reliability category</span></span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a><span class="fu">kable</span>(selected_counties, <span class="at">col.names =</span> <span class="fu">c</span>(</span>
+<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a>  <span class="st">"County"</span>, <span class="st">"Median Household Income"</span>, <span class="st">"MOE %"</span>, <span class="st">"Reliability"</span>),</span>
+<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a>  <span class="at">caption =</span> <span class="st">"Three IL Counties with Varying Reliability"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output-display">
+<table class="caption-top table table-sm table-striped small">
+<caption>Three IL Counties with Varying Reliability</caption>
+<colgroup>
+<col style="width: 23%">
+<col style="width: 33%">
+<col style="width: 15%">
+<col style="width: 27%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;">County</th>
+<th style="text-align: right;">Median Household Income</th>
+<th style="text-align: right;">MOE %</th>
+<th style="text-align: left;">Reliability</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">Cook County</td>
+<td style="text-align: right;">78304</td>
+<td style="text-align: right;">0.7292092</td>
+<td style="text-align: left;">High Confidence</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Effingham County</td>
+<td style="text-align: right;">73181</td>
+<td style="text-align: right;">5.2076359</td>
+<td style="text-align: left;">Moderate Confidence</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Pulaski County</td>
+<td style="text-align: right;">41038</td>
+<td style="text-align: right;">10.8436084</td>
+<td style="text-align: left;">Low Confidence</td>
+</tr>
+</tbody>
+</table>
 </div>
-<p><strong>Comment on the output:</strong> [write something :)]</p>
+</div>
+<p><strong>Comment on the output:</strong> Cook County, being the most populous in the state, has a less than 1% MOE to Estimate ratio, which makes sense as the data set is massive compared to some of the less populous counties. Pulaski County has a far lower estimated median HH income compared to Cook and Effingham Counties, and also has a much worse reliability score. I wonder if counties with lower income estimates would also in general have worse reliability, as larger cities and towns often have higher median incomes.</p>
 </section>
 <section id="tract-level-demographics" class="level2">
 <h2 class="anchored" data-anchor-id="tract-level-demographics">3.2 Tract-Level Demographics</h2>
 <p><strong>Your Task:</strong> Get demographic data for census tracts in your selected counties.</p>
 <p><strong>Requirements:</strong> - Geography: tract level - Variables: white alone (B03002_003), Black/African American (B03002_004), Hispanic/Latino (B03002_012), total population (B03002_001) - Use the same state and year as before - Output format: wide - <strong>Challenge:</strong> You’ll need county codes, not names. Look at the GEOID patterns in your county data for hints.</p>
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Define your race/ethnicity variables with descriptive names</span></span>
-<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Use get_acs() to retrieve tract-level data</span></span>
-<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Hint: You may need to specify county codes in the county parameter</span></span>
-<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a><span class="co"># Calculate percentage of each group using mutate()</span></span>
-<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a><span class="co"># Create percentages for white, Black, and Hispanic populations</span></span>
-<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a><span class="co"># Add readable tract and county name columns using str_extract() or similar</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Define your race/ethnicity variables with descriptive names</span></span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>tract_variables <span class="ot">=</span> <span class="fu">c</span>(<span class="at">white =</span> <span class="st">"B03002_003"</span>,</span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>                    <span class="at">black =</span> <span class="st">"B03002_004"</span>,</span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>                    <span class="at">hispanic =</span> <span class="st">"B03002_012"</span>,</span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>                    <span class="at">total_pop =</span> <span class="st">"B03002_001"</span>)</span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a><span class="co"># Use get_acs() to retrieve tract-level data</span></span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a><span class="co"># Hint: You may need to specify county codes in the county parameter</span></span>
+<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a>tract_data <span class="ot">&lt;-</span> <span class="fu">get_acs</span>(</span>
+<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a>  <span class="at">geography =</span> <span class="st">"tract"</span>,</span>
+<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a>  <span class="at">variables =</span> tract_variables,</span>
+<span id="cb8-11"><a href="#cb8-11" aria-hidden="true" tabindex="-1"></a>  <span class="at">state =</span> my_state,</span>
+<span id="cb8-12"><a href="#cb8-12" aria-hidden="true" tabindex="-1"></a>  <span class="at">county =</span> <span class="fu">c</span>(<span class="st">"Cook"</span>, <span class="st">"Effingham"</span>, <span class="st">"Pulaski"</span>),</span>
+<span id="cb8-13"><a href="#cb8-13" aria-hidden="true" tabindex="-1"></a>  <span class="at">year =</span> <span class="dv">2022</span>,</span>
+<span id="cb8-14"><a href="#cb8-14" aria-hidden="true" tabindex="-1"></a>  <span class="at">output =</span> <span class="st">"wide"</span></span>
+<span id="cb8-15"><a href="#cb8-15" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb8-16"><a href="#cb8-16" aria-hidden="true" tabindex="-1"></a><span class="co"># Calculate percentage of each group using mutate()</span></span>
+<span id="cb8-17"><a href="#cb8-17" aria-hidden="true" tabindex="-1"></a><span class="co"># Create percentages for white, Black, and Hispanic populations</span></span>
+<span id="cb8-18"><a href="#cb8-18" aria-hidden="true" tabindex="-1"></a>tract_data <span class="ot">&lt;-</span> tract_data <span class="sc">%&gt;%</span></span>
+<span id="cb8-19"><a href="#cb8-19" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">white_per =</span> whiteE <span class="sc">/</span> total_popE <span class="sc">*</span> <span class="dv">100</span>, </span>
+<span id="cb8-20"><a href="#cb8-20" aria-hidden="true" tabindex="-1"></a>         <span class="at">black_per =</span> blackE <span class="sc">/</span> total_popE <span class="sc">*</span> <span class="dv">100</span>,</span>
+<span id="cb8-21"><a href="#cb8-21" aria-hidden="true" tabindex="-1"></a>         <span class="at">hispanic_per =</span> hispanicE <span class="sc">/</span> total_popE <span class="sc">*</span> <span class="dv">100</span>)</span>
+<span id="cb8-22"><a href="#cb8-22" aria-hidden="true" tabindex="-1"></a><span class="co"># Add readable tract and county name columns using str_extract() or similar</span></span>
+<span id="cb8-23"><a href="#cb8-23" aria-hidden="true" tabindex="-1"></a><span class="do">### I looked up the GEOID FIPS and tract codes to use the GEOID to extract the county and tract names for each tract. Then I selected for certain digits within the 11 digit GEOID using str_sub.</span></span>
+<span id="cb8-24"><a href="#cb8-24" aria-hidden="true" tabindex="-1"></a>tract_data <span class="ot">&lt;-</span> tract_data <span class="sc">%&gt;%</span></span>
+<span id="cb8-25"><a href="#cb8-25" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
+<span id="cb8-26"><a href="#cb8-26" aria-hidden="true" tabindex="-1"></a>    <span class="at">il_county =</span> <span class="fu">str_sub</span>(GEOID, <span class="dv">3</span>, <span class="dv">5</span>), <span class="co">#select the 3-5 digits for county</span></span>
+<span id="cb8-27"><a href="#cb8-27" aria-hidden="true" tabindex="-1"></a>    <span class="at">tract_number =</span> <span class="fu">str_sub</span>(GEOID, <span class="dv">6</span>, <span class="dv">11</span>) <span class="co">#select the 6-11 digits for tract</span></span>
+<span id="cb8-28"><a href="#cb8-28" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb8-29"><a href="#cb8-29" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-30"><a href="#cb8-30" aria-hidden="true" tabindex="-1"></a><span class="do">### now I have to change the county codes (031, 049, 153) to their associated names (Cook, Effingham, Pulaski)</span></span>
+<span id="cb8-31"><a href="#cb8-31" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-32"><a href="#cb8-32" aria-hidden="true" tabindex="-1"></a>tract_data <span class="ot">&lt;-</span> tract_data <span class="sc">%&gt;%</span></span>
+<span id="cb8-33"><a href="#cb8-33" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
+<span id="cb8-34"><a href="#cb8-34" aria-hidden="true" tabindex="-1"></a>    <span class="at">county_name =</span> <span class="fu">recode</span>(il_county,</span>
+<span id="cb8-35"><a href="#cb8-35" aria-hidden="true" tabindex="-1"></a>                         <span class="st">"031"</span> <span class="ot">=</span> <span class="st">"Cook"</span>,</span>
+<span id="cb8-36"><a href="#cb8-36" aria-hidden="true" tabindex="-1"></a>                         <span class="st">"049"</span> <span class="ot">=</span> <span class="st">"Effingham"</span>,</span>
+<span id="cb8-37"><a href="#cb8-37" aria-hidden="true" tabindex="-1"></a>                         <span class="st">"153"</span> <span class="ot">=</span> <span class="st">"Pulaski"</span>)</span>
+<span id="cb8-38"><a href="#cb8-38" aria-hidden="true" tabindex="-1"></a>    )</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 </section>
 <section id="demographic-analysis" class="level2">
 <h2 class="anchored" data-anchor-id="demographic-analysis">3.3 Demographic Analysis</h2>
 <p><strong>Your Task:</strong> Analyze the demographic patterns in your selected areas.</p>
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Find the tract with the highest percentage of Hispanic/Latino residents</span></span>
-<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a><span class="co"># Hint: use arrange() and slice() to get the top tract</span></span>
-<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Calculate average demographics by county using group_by() and summarize()</span></span>
-<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a><span class="co"># Show: number of tracts, average percentage for each racial/ethnic group</span></span>
-<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a><span class="co"># Create a nicely formatted table of your results using kable()</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Find the tract with the highest percentage of Hispanic/Latino residents</span></span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a><span class="co"># Hint: use arrange() and slice() to get the top tract</span></span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>highest_hisp <span class="ot">&lt;-</span> tract_data <span class="sc">%&gt;%</span></span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">arrange</span>(<span class="fu">desc</span>(hispanic_per)) <span class="sc">%&gt;%</span></span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a>    <span class="fu">slice</span>(<span class="dv">1</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a>      <span class="fu">select</span>(county_name, tract_number, hispanic_per, black_per, white_per, total_popE)</span>
+<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-9"><a href="#cb9-9" aria-hidden="true" tabindex="-1"></a><span class="co">#The tract with the highest percent latino/hispanic population is tract 301308 in Cook County (Chicago) with 98.83%.</span></span>
+<span id="cb9-10"><a href="#cb9-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-11"><a href="#cb9-11" aria-hidden="true" tabindex="-1"></a><span class="co"># Calculate average demographics by county using group_by() and summarize()</span></span>
+<span id="cb9-12"><a href="#cb9-12" aria-hidden="true" tabindex="-1"></a><span class="co"># Show: number of tracts, average percentage for each racial/ethnic group</span></span>
+<span id="cb9-13"><a href="#cb9-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-14"><a href="#cb9-14" aria-hidden="true" tabindex="-1"></a>demo_by_county <span class="ot">&lt;-</span> tract_data <span class="sc">%&gt;%</span></span>
+<span id="cb9-15"><a href="#cb9-15" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(county_name) <span class="sc">%&gt;%</span></span>
+<span id="cb9-16"><a href="#cb9-16" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarize</span>(</span>
+<span id="cb9-17"><a href="#cb9-17" aria-hidden="true" tabindex="-1"></a>    <span class="at">n_tracts =</span> <span class="fu">n</span>(),</span>
+<span id="cb9-18"><a href="#cb9-18" aria-hidden="true" tabindex="-1"></a>    <span class="at">avg_white =</span> <span class="fu">mean</span>(white_per, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb9-19"><a href="#cb9-19" aria-hidden="true" tabindex="-1"></a>    <span class="at">avg_black =</span> <span class="fu">mean</span>(black_per, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb9-20"><a href="#cb9-20" aria-hidden="true" tabindex="-1"></a>    <span class="at">avg_hisp =</span> <span class="fu">mean</span>(hispanic_per, <span class="at">na.rm =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb9-21"><a href="#cb9-21" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb9-22"><a href="#cb9-22" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-23"><a href="#cb9-23" aria-hidden="true" tabindex="-1"></a><span class="co"># Create a nicely formatted table of your results using kable()</span></span>
+<span id="cb9-24"><a href="#cb9-24" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-25"><a href="#cb9-25" aria-hidden="true" tabindex="-1"></a><span class="fu">kable</span>(demo_by_county, <span class="at">col.names =</span> <span class="fu">c</span>(</span>
+<span id="cb9-26"><a href="#cb9-26" aria-hidden="true" tabindex="-1"></a>  <span class="st">"County"</span>, <span class="st">"Number of Tracts"</span>, <span class="st">"Average % White"</span>, <span class="st">"Average % Black"</span>, <span class="st">"Average % Hispanic"</span>),</span>
+<span id="cb9-27"><a href="#cb9-27" aria-hidden="true" tabindex="-1"></a>  <span class="at">caption =</span> <span class="st">"Three IL Counties and their Racial Demographics"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output-display">
+<table class="caption-top table table-sm table-striped small">
+<caption>Three IL Counties and their Racial Demographics</caption>
+<colgroup>
+<col style="width: 12%">
+<col style="width: 21%">
+<col style="width: 20%">
+<col style="width: 20%">
+<col style="width: 24%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;">County</th>
+<th style="text-align: right;">Number of Tracts</th>
+<th style="text-align: right;">Average % White</th>
+<th style="text-align: right;">Average % Black</th>
+<th style="text-align: right;">Average % Hispanic</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">Cook</td>
+<td style="text-align: right;">1332</td>
+<td style="text-align: right;">38.32627</td>
+<td style="text-align: right;">27.0677340</td>
+<td style="text-align: right;">24.721704</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Effingham</td>
+<td style="text-align: right;">8</td>
+<td style="text-align: right;">94.99167</td>
+<td style="text-align: right;">0.5021559</td>
+<td style="text-align: right;">2.363741</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Pulaski</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">62.57444</td>
+<td style="text-align: right;">31.5587510</td>
+<td style="text-align: right;">1.901316</td>
+</tr>
+</tbody>
+</table>
+</div>
 </div>
 </section>
 </section>
@@ -372,27 +620,104 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <p><strong>Your Task:</strong> Examine margins of error for demographic variables to see if some communities have less reliable data.</p>
 <p><strong>Requirements:</strong> - Calculate MOE percentages for each demographic variable - Flag tracts where any demographic variable has MOE &gt; 15% - Create summary statistics</p>
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Calculate MOE percentages for white, Black, and Hispanic variables</span></span>
-<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a><span class="co"># Hint: use the same formula as before (margin/estimate * 100)</span></span>
-<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Create a flag for tracts with high MOE on any demographic variable</span></span>
-<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a><span class="co"># Use logical operators (| for OR) in an ifelse() statement</span></span>
-<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a><span class="co"># Create summary statistics showing how many tracts have data quality issues</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Calculate MOE percentages for white, Black, and Hispanic variables</span></span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a><span class="co"># Hint: use the same formula as before (margin/estimate * 100)</span></span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a>tract_data <span class="ot">&lt;-</span> tract_data <span class="sc">%&gt;%</span></span>
+<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">MOE_pct_white =</span> (whiteM <span class="sc">/</span> whiteE) <span class="sc">*</span> <span class="dv">100</span>,</span>
+<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a>         <span class="at">MOE_pct_black =</span> (blackM <span class="sc">/</span> blackE) <span class="sc">*</span> <span class="dv">100</span>,</span>
+<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a>         <span class="at">MOE_pct_hispanic =</span> (hispanicM <span class="sc">/</span> hispanicE) <span class="sc">*</span> <span class="dv">100</span>)</span>
+<span id="cb10-8"><a href="#cb10-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-9"><a href="#cb10-9" aria-hidden="true" tabindex="-1"></a><span class="co"># Create a flag for tracts with high MOE on any demographic variable</span></span>
+<span id="cb10-10"><a href="#cb10-10" aria-hidden="true" tabindex="-1"></a><span class="co"># Use logical operators (| for OR) in an ifelse() statement</span></span>
+<span id="cb10-11"><a href="#cb10-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-12"><a href="#cb10-12" aria-hidden="true" tabindex="-1"></a>tract_data <span class="ot">&lt;-</span> tract_data <span class="sc">%&gt;%</span></span>
+<span id="cb10-13"><a href="#cb10-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">higherror =</span> <span class="fu">ifelse</span>(</span>
+<span id="cb10-14"><a href="#cb10-14" aria-hidden="true" tabindex="-1"></a>    MOE_pct_white <span class="sc">&gt;</span> <span class="dv">30</span> <span class="sc">|</span></span>
+<span id="cb10-15"><a href="#cb10-15" aria-hidden="true" tabindex="-1"></a>    MOE_pct_black <span class="sc">&gt;</span> <span class="dv">30</span> <span class="sc">|</span></span>
+<span id="cb10-16"><a href="#cb10-16" aria-hidden="true" tabindex="-1"></a>    MOE_pct_hispanic <span class="sc">&gt;</span> <span class="dv">30</span>,</span>
+<span id="cb10-17"><a href="#cb10-17" aria-hidden="true" tabindex="-1"></a>    <span class="dv">1</span>, <span class="dv">0</span></span>
+<span id="cb10-18"><a href="#cb10-18" aria-hidden="true" tabindex="-1"></a>  ))</span>
+<span id="cb10-19"><a href="#cb10-19" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-20"><a href="#cb10-20" aria-hidden="true" tabindex="-1"></a><span class="co"># Create summary statistics showing how many tracts have data quality issues</span></span>
+<span id="cb10-21"><a href="#cb10-21" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-22"><a href="#cb10-22" aria-hidden="true" tabindex="-1"></a>tract_data <span class="sc">%&gt;%</span></span>
+<span id="cb10-23"><a href="#cb10-23" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarize</span>(</span>
+<span id="cb10-24"><a href="#cb10-24" aria-hidden="true" tabindex="-1"></a>    <span class="at">total_tracts =</span> <span class="fu">n</span>(),</span>
+<span id="cb10-25"><a href="#cb10-25" aria-hidden="true" tabindex="-1"></a>    <span class="at">n_flagged =</span> <span class="fu">sum</span>(higherror),</span>
+<span id="cb10-26"><a href="#cb10-26" aria-hidden="true" tabindex="-1"></a>    <span class="at">per_flagged =</span> <span class="fu">mean</span>(higherror) <span class="sc">*</span> <span class="dv">100</span> </span>
+<span id="cb10-27"><a href="#cb10-27" aria-hidden="true" tabindex="-1"></a>    <span class="co">#since higherror is either 1 or 0, the mean * 100 works as the percent flagged</span></span>
+<span id="cb10-28"><a href="#cb10-28" aria-hidden="true" tabindex="-1"></a>  )</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 1 × 3
+  total_tracts n_flagged per_flagged
+         &lt;int&gt;     &lt;dbl&gt;       &lt;dbl&gt;
+1         1342      1330        99.1</code></pre>
+</div>
 </div>
 </section>
 <section id="pattern-analysis" class="level2">
 <h2 class="anchored" data-anchor-id="pattern-analysis">4.2 Pattern Analysis</h2>
 <p><strong>Your Task:</strong> Investigate whether data quality problems are randomly distributed or concentrated in certain types of communities.</p>
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Group tracts by whether they have high MOE issues</span></span>
-<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a><span class="co"># Calculate average characteristics for each group:</span></span>
-<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a><span class="co"># - population size, demographic percentages</span></span>
-<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a><span class="co"># Use group_by() and summarize() to create this comparison</span></span>
-<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a><span class="co"># Create a professional table showing the patterns</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb12"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Group tracts by whether they have high MOE issues</span></span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a><span class="co"># Calculate average characteristics for each group:</span></span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a><span class="co"># - population size, demographic percentages</span></span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a>quality_dist <span class="ot">&lt;-</span> tract_data <span class="sc">%&gt;%</span></span>
+<span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(higherror) <span class="sc">%&gt;%</span></span>
+<span id="cb12-7"><a href="#cb12-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarize</span>(</span>
+<span id="cb12-8"><a href="#cb12-8" aria-hidden="true" tabindex="-1"></a>    <span class="at">avg_pop =</span> <span class="fu">mean</span>(total_popE, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb12-9"><a href="#cb12-9" aria-hidden="true" tabindex="-1"></a>    <span class="at">avg_pctwhite =</span> <span class="fu">mean</span>(white_per, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb12-10"><a href="#cb12-10" aria-hidden="true" tabindex="-1"></a>    <span class="at">avg_pctblack =</span> <span class="fu">mean</span>(black_per, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb12-11"><a href="#cb12-11" aria-hidden="true" tabindex="-1"></a>    <span class="at">avg_pcthisp =</span> <span class="fu">mean</span>(hispanic_per, <span class="at">na.rm =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb12-12"><a href="#cb12-12" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb12-13"><a href="#cb12-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-14"><a href="#cb12-14" aria-hidden="true" tabindex="-1"></a><span class="co"># Use group_by() and summarize() to create this comparison</span></span>
+<span id="cb12-15"><a href="#cb12-15" aria-hidden="true" tabindex="-1"></a><span class="co"># Create a professional table showing the patterns</span></span>
+<span id="cb12-16"><a href="#cb12-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-17"><a href="#cb12-17" aria-hidden="true" tabindex="-1"></a><span class="fu">kable</span>(quality_dist, <span class="at">col.names =</span> <span class="fu">c</span>(</span>
+<span id="cb12-18"><a href="#cb12-18" aria-hidden="true" tabindex="-1"></a>  <span class="st">"MOE Percent &gt; 30%"</span>, <span class="st">"Average Population"</span>, <span class="st">"Average % White"</span>, <span class="st">"Average % Black"</span>, <span class="st">"Average % Hispanic"</span>),</span>
+<span id="cb12-19"><a href="#cb12-19" aria-hidden="true" tabindex="-1"></a>  <span class="at">caption =</span> <span class="st">"High and Low MOE Tracts and their Demographics"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output-display">
+<table class="caption-top table table-sm table-striped small">
+<caption>High and Low MOE Tracts and their Demographics</caption>
+<colgroup>
+<col style="width: 20%">
+<col style="width: 21%">
+<col style="width: 18%">
+<col style="width: 18%">
+<col style="width: 21%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: right;">MOE Percent &gt; 30%</th>
+<th style="text-align: right;">Average Population</th>
+<th style="text-align: right;">Average % White</th>
+<th style="text-align: right;">Average % Black</th>
+<th style="text-align: right;">Average % Hispanic</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">5627.667</td>
+<td style="text-align: right;">33.61835</td>
+<td style="text-align: right;">27.18073</td>
+<td style="text-align: right;">29.8925</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">3907.974</td>
+<td style="text-align: right;">38.74732</td>
+<td style="text-align: right;">26.91321</td>
+<td style="text-align: right;">24.5056</td>
+</tr>
+</tbody>
+</table>
 </div>
-<p><strong>Pattern Analysis:</strong> [Describe any patterns you observe. Do certain types of communities have less reliable data? What might explain this?]</p>
+</div>
+<p><strong>Pattern Analysis:</strong> Tracts with any MOEs greater than 30% on average high lower populations, a higher proportion of White people, and lower proportion of Hispanic people. It must be noted that, while not listed on this table, around 99% of tracts had at least one demographic category with an MOE greater than 30%, so the unflagged tracts had a much smaller sample size. That being said, it would make sense for tracts with lower MOEs to gave greater average populations, as greater sample sizes often have lower MOEs.</p>
 </section>
 </section>
 <section id="part-5-policy-recommendations" class="level1">
@@ -401,34 +726,798 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <h2 class="anchored" data-anchor-id="analysis-integration-and-professional-summary">5.1 Analysis Integration and Professional Summary</h2>
 <p><strong>Your Task:</strong> Write an executive summary that integrates findings from all four analyses.</p>
 <p><strong>Executive Summary Requirements:</strong> 1. <strong>Overall Pattern Identification</strong>: What are the systematic patterns across all your analyses? 2. <strong>Equity Assessment</strong>: Which communities face the greatest risk of algorithmic bias based on your findings? 3. <strong>Root Cause Analysis</strong>: What underlying factors drive both data quality issues and bias risk? 4. <strong>Strategic Recommendations</strong>: What should the Department implement to address these systematic issues?</p>
-<p><strong>Executive Summary:</strong></p>
-<p>[Your integrated 4-paragraph summary here]</p>
+<p><strong>Executive Summary:</strong> 1. Across analyses in this lab, one key pattern is that lower population counties tend to have lower incomes, and higher margins of error. At the county level, population, income, and other demographic analyses are all possible with less risk of great error, but at the census tract level, errors become too large to confidently make assumptions or inform policy. For some data categories like population or median income (depending on variability in the sample population), errors at the tract level are potentially low enough to inform decisions, but demographic data such as race that divides the population into smaller groups and increasing MOEs, is much less reliable.</p>
+<ol start="2" type="1">
+<li><p>In my findings, counties with smaller populations and fewer census tracts face greater risk of algorithmic bias as their errors for median income and other social/demographic factors are far greater than counties (such as Cook) with larger populations. Other at-risk groups include populations in highly racially diverse census tracts, as each subset of the tract’s population is smaller and faces greater error due to a small sample size. Great magins of error may influence policies to afford greater privelages to populations that need them less than others.</p></li>
+<li><p>The underlying factors increasing risk and bias are small sample sizes, and great variability within those samples. For instance, if a county’s residents have widely ranging incomes, the median income based on a sample population has a higher likelihood of being inaccurate for the whole population. Another risk is using small data samples (such as census tracts) to inform policies – if resources are rationed based on census tract income, race, or other data, then errors are likely to create misalignments with reality.</p></li>
+<li><p>To address systematic issues, algorithms that influence policy decisions should avoid smaller sample datasets where possible, and supplement their data with 5-year ACS estimates, Decennial Census data, and other available sources to inform decisions. Means beyond conventional government data collection may be deployed depending on policy goals–for instance, if a state government is determining which counties to allocate more funding for transportation and infrastructure, then there should be infrastructure quality assessments, traffic surveys, and travel demand modeling in addition to whatever census or ACS data may be used.</p></li>
+</ol>
 </section>
 <section id="specific-recommendations" class="level2">
 <h2 class="anchored" data-anchor-id="specific-recommendations">6.3 Specific Recommendations</h2>
 <p><strong>Your Task:</strong> Create a decision framework for algorithm implementation.</p>
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Create a summary table using your county reliability data</span></span>
-<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a><span class="co"># Include: county name, median income, MOE percentage, reliability category</span></span>
-<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Add a new column with algorithm recommendations using case_when():</span></span>
-<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a><span class="co"># - High Confidence: "Safe for algorithmic decisions"</span></span>
-<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a><span class="co"># - Moderate Confidence: "Use with caution - monitor outcomes"  </span></span>
-<span id="cb11-7"><a href="#cb11-7" aria-hidden="true" tabindex="-1"></a><span class="co"># - Low Confidence: "Requires manual review or additional data"</span></span>
-<span id="cb11-8"><a href="#cb11-8" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb11-9"><a href="#cb11-9" aria-hidden="true" tabindex="-1"></a><span class="co"># Format as a professional table with kable()</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb13"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Create a summary table using your county reliability data</span></span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a><span class="co"># Include: county name, median income, MOE percentage, reliability category</span></span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a>county_decision <span class="ot">&lt;-</span> county_data <span class="sc">%&gt;%</span></span>
+<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(county_name, med_incomeE, MOE_percent, reliability)</span>
+<span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-7"><a href="#cb13-7" aria-hidden="true" tabindex="-1"></a><span class="co"># Add a new column with algorithm recommendations using case_when():</span></span>
+<span id="cb13-8"><a href="#cb13-8" aria-hidden="true" tabindex="-1"></a><span class="co"># - High Confidence: "Safe for algorithmic decisions"</span></span>
+<span id="cb13-9"><a href="#cb13-9" aria-hidden="true" tabindex="-1"></a><span class="co"># - Moderate Confidence: "Use with caution - monitor outcomes"  </span></span>
+<span id="cb13-10"><a href="#cb13-10" aria-hidden="true" tabindex="-1"></a><span class="co"># - Low Confidence: "Requires manual review or additional data"</span></span>
+<span id="cb13-11"><a href="#cb13-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-12"><a href="#cb13-12" aria-hidden="true" tabindex="-1"></a>county_decision <span class="ot">&lt;-</span> county_decision <span class="sc">%&gt;%</span></span>
+<span id="cb13-13"><a href="#cb13-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">algo_rec =</span> <span class="fu">case_when</span>(</span>
+<span id="cb13-14"><a href="#cb13-14" aria-hidden="true" tabindex="-1"></a>    MOE_percent <span class="sc">&lt;=</span> <span class="dv">5</span> <span class="sc">~</span> <span class="st">'Safe for algorithmic decisions'</span>,</span>
+<span id="cb13-15"><a href="#cb13-15" aria-hidden="true" tabindex="-1"></a>    MOE_percent <span class="sc">&lt;=</span> <span class="dv">10</span> <span class="sc">~</span> <span class="st">'Use with caution - monitor outcomes'</span>,</span>
+<span id="cb13-16"><a href="#cb13-16" aria-hidden="true" tabindex="-1"></a>    <span class="cn">TRUE</span> <span class="sc">~</span> <span class="st">'Requires manual review or additional data'</span>))</span>
+<span id="cb13-17"><a href="#cb13-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-18"><a href="#cb13-18" aria-hidden="true" tabindex="-1"></a><span class="co"># Format as a professional table with kable()</span></span>
+<span id="cb13-19"><a href="#cb13-19" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-20"><a href="#cb13-20" aria-hidden="true" tabindex="-1"></a><span class="fu">kable</span>(county_decision, <span class="at">col.names =</span> <span class="fu">c</span>(</span>
+<span id="cb13-21"><a href="#cb13-21" aria-hidden="true" tabindex="-1"></a>        <span class="st">"IL County"</span>, <span class="st">"Median Income"</span>, <span class="st">"Margin of Error percent"</span>, <span class="st">"Reliability"</span>, <span class="st">"Algorithmic Use Recommendation"</span>),</span>
+<span id="cb13-22"><a href="#cb13-22" aria-hidden="true" tabindex="-1"></a>      <span class="at">caption =</span> <span class="st">"Illinois Counties Median Incomes and Data Reliability"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output-display">
+<table class="caption-top table table-sm table-striped small">
+<caption>Illinois Counties Median Incomes and Data Reliability</caption>
+<colgroup>
+<col style="width: 15%">
+<col style="width: 11%">
+<col style="width: 20%">
+<col style="width: 16%">
+<col style="width: 35%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;">IL County</th>
+<th style="text-align: right;">Median Income</th>
+<th style="text-align: right;">Margin of Error percent</th>
+<th style="text-align: left;">Reliability</th>
+<th style="text-align: left;">Algorithmic Use Recommendation</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">Adams County</td>
+<td style="text-align: right;">63767</td>
+<td style="text-align: right;">3.7244970</td>
+<td style="text-align: left;">High Confidence</td>
+<td style="text-align: left;">Safe for algorithmic decisions</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Alexander County</td>
+<td style="text-align: right;">40365</td>
+<td style="text-align: right;">19.8389694</td>
+<td style="text-align: left;">Low Confidence</td>
+<td style="text-align: left;">Requires manual review or additional data</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Bond County</td>
+<td style="text-align: right;">58617</td>
+<td style="text-align: right;">9.2328164</td>
+<td style="text-align: left;">Moderate Confidence</td>
+<td style="text-align: left;">Use with caution - monitor outcomes</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Boone County</td>
+<td style="text-align: right;">80502</td>
+<td style="text-align: right;">4.6694492</td>
+<td style="text-align: left;">High Confidence</td>
+<td style="text-align: left;">Safe for algorithmic decisions</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Brown County</td>
+<td style="text-align: right;">64760</td>
+<td style="text-align: right;">11.9626313</td>
+<td style="text-align: left;">Low Confidence</td>
+<td style="text-align: left;">Requires manual review or additional data</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Bureau County</td>
+<td style="text-align: right;">64165</td>
+<td style="text-align: right;">5.1320814</td>
+<td style="text-align: left;">Moderate Confidence</td>
+<td style="text-align: left;">Use with caution - monitor outcomes</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Calhoun County</td>
+<td style="text-align: right;">88059</td>
+<td style="text-align: right;">8.6226280</td>
+<td style="text-align: left;">Moderate Confidence</td>
+<td style="text-align: left;">Use with caution - monitor outcomes</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Carroll County</td>
+<td style="text-align: right;">61539</td>
+<td style="text-align: right;">5.5850761</td>
+<td style="text-align: left;">Moderate Confidence</td>
+<td style="text-align: left;">Use with caution - monitor outcomes</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Cass County</td>
+<td style="text-align: right;">64826</td>
+<td style="text-align: right;">8.6153704</td>
+<td style="text-align: left;">Moderate Confidence</td>
+<td style="text-align: left;">Use with caution - monitor outcomes</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Champaign County</td>
+<td style="text-align: right;">61090</td>
+<td style="text-align: right;">2.6600098</td>
+<td style="text-align: left;">High Confidence</td>
+<td style="text-align: left;">Safe for algorithmic decisions</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Christian County</td>
+<td style="text-align: right;">56933</td>
+<td style="text-align: right;">5.1955808</td>
+<td style="text-align: left;">Moderate Confidence</td>
+<td style="text-align: left;">Use with caution - monitor outcomes</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Clark County</td>
+<td style="text-align: right;">65874</td>
+<td style="text-align: right;">5.6061572</td>
+<td style="text-align: left;">Moderate Confidence</td>
+<td style="text-align: left;">Use with caution - monitor outcomes</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Clay County</td>
+<td style="text-align: right;">58028</td>
+<td style="text-align: right;">9.5695182</td>
+<td style="text-align: left;">Moderate Confidence</td>
+<td style="text-align: left;">Use with caution - monitor outcomes</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Clinton County</td>
+<td style="text-align: right;">78054</td>
+<td style="text-align: right;">4.5942553</td>
+<td style="text-align: left;">High Confidence</td>
+<td style="text-align: left;">Safe for algorithmic decisions</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Coles County</td>
+<td style="text-align: right;">53732</td>
+<td style="text-align: right;">7.5857962</td>
+<td style="text-align: left;">Moderate Confidence</td>
+<td style="text-align: left;">Use with caution - monitor outcomes</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Cook County</td>
+<td style="text-align: right;">78304</td>
+<td style="text-align: right;">0.7292092</td>
+<td style="text-align: left;">High Confidence</td>
+<td style="text-align: left;">Safe for algorithmic decisions</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Crawford County</td>
+<td style="text-align: right;">64163</td>
+<td style="text-align: right;">9.3153375</td>
+<td style="text-align: left;">Moderate Confidence</td>
+<td style="text-align: left;">Use with caution - monitor outcomes</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Cumberland County</td>
+<td style="text-align: right;">71274</td>
+<td style="text-align: right;">10.5859079</td>
+<td style="text-align: left;">Low Confidence</td>
+<td style="text-align: left;">Requires manual review or additional data</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">DeKalb County</td>
+<td style="text-align: right;">68617</td>
+<td style="text-align: right;">3.4029468</td>
+<td style="text-align: left;">High Confidence</td>
+<td style="text-align: left;">Safe for algorithmic decisions</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">De Witt County</td>
+<td style="text-align: right;">61823</td>
+<td style="text-align: right;">9.5223461</td>
+<td style="text-align: left;">Moderate Confidence</td>
+<td style="text-align: left;">Use with caution - monitor outcomes</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Douglas County</td>
+<td style="text-align: right;">67177</td>
+<td style="text-align: right;">8.0072048</td>
+<td style="text-align: left;">Moderate Confidence</td>
+<td style="text-align: left;">Use with caution - monitor outcomes</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">DuPage County</td>
+<td style="text-align: right;">107035</td>
+<td style="text-align: right;">1.1753165</td>
+<td style="text-align: left;">High Confidence</td>
+<td style="text-align: left;">Safe for algorithmic decisions</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Edgar County</td>
+<td style="text-align: right;">56687</td>
+<td style="text-align: right;">11.2459647</td>
+<td style="text-align: left;">Low Confidence</td>
+<td style="text-align: left;">Requires manual review or additional data</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Edwards County</td>
+<td style="text-align: right;">60784</td>
+<td style="text-align: right;">8.1172677</td>
+<td style="text-align: left;">Moderate Confidence</td>
+<td style="text-align: left;">Use with caution - monitor outcomes</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Effingham County</td>
+<td style="text-align: right;">73181</td>
+<td style="text-align: right;">5.2076359</td>
+<td style="text-align: left;">Moderate Confidence</td>
+<td style="text-align: left;">Use with caution - monitor outcomes</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Fayette County</td>
+<td style="text-align: right;">51962</td>
+<td style="text-align: right;">6.9108194</td>
+<td style="text-align: left;">Moderate Confidence</td>
+<td style="text-align: left;">Use with caution - monitor outcomes</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Ford County</td>
+<td style="text-align: right;">58930</td>
+<td style="text-align: right;">7.1423723</td>
+<td style="text-align: left;">Moderate Confidence</td>
+<td style="text-align: left;">Use with caution - monitor outcomes</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Franklin County</td>
+<td style="text-align: right;">51031</td>
+<td style="text-align: right;">5.6259920</td>
+<td style="text-align: left;">Moderate Confidence</td>
+<td style="text-align: left;">Use with caution - monitor outcomes</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Fulton County</td>
+<td style="text-align: right;">57223</td>
+<td style="text-align: right;">4.5890638</td>
+<td style="text-align: left;">High Confidence</td>
+<td style="text-align: left;">Safe for algorithmic decisions</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Gallatin County</td>
+<td style="text-align: right;">51868</td>
+<td style="text-align: right;">10.4920182</td>
+<td style="text-align: left;">Low Confidence</td>
+<td style="text-align: left;">Requires manual review or additional data</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Greene County</td>
+<td style="text-align: right;">58900</td>
+<td style="text-align: right;">4.3463497</td>
+<td style="text-align: left;">High Confidence</td>
+<td style="text-align: left;">Safe for algorithmic decisions</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Grundy County</td>
+<td style="text-align: right;">89993</td>
+<td style="text-align: right;">3.4513796</td>
+<td style="text-align: left;">High Confidence</td>
+<td style="text-align: left;">Safe for algorithmic decisions</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Hamilton County</td>
+<td style="text-align: right;">60574</td>
+<td style="text-align: right;">10.6118136</td>
+<td style="text-align: left;">Low Confidence</td>
+<td style="text-align: left;">Requires manual review or additional data</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Hancock County</td>
+<td style="text-align: right;">61026</td>
+<td style="text-align: right;">6.1236194</td>
+<td style="text-align: left;">Moderate Confidence</td>
+<td style="text-align: left;">Use with caution - monitor outcomes</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Hardin County</td>
+<td style="text-align: right;">53026</td>
+<td style="text-align: right;">20.7558556</td>
+<td style="text-align: left;">Low Confidence</td>
+<td style="text-align: left;">Requires manual review or additional data</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Henderson County</td>
+<td style="text-align: right;">64946</td>
+<td style="text-align: right;">7.8988698</td>
+<td style="text-align: left;">Moderate Confidence</td>
+<td style="text-align: left;">Use with caution - monitor outcomes</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Henry County</td>
+<td style="text-align: right;">66313</td>
+<td style="text-align: right;">5.3217318</td>
+<td style="text-align: left;">Moderate Confidence</td>
+<td style="text-align: left;">Use with caution - monitor outcomes</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Iroquois County</td>
+<td style="text-align: right;">62866</td>
+<td style="text-align: right;">5.1426844</td>
+<td style="text-align: left;">Moderate Confidence</td>
+<td style="text-align: left;">Use with caution - monitor outcomes</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Jackson County</td>
+<td style="text-align: right;">44847</td>
+<td style="text-align: right;">6.5712311</td>
+<td style="text-align: left;">Moderate Confidence</td>
+<td style="text-align: left;">Use with caution - monitor outcomes</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Jasper County</td>
+<td style="text-align: right;">67429</td>
+<td style="text-align: right;">8.4563022</td>
+<td style="text-align: left;">Moderate Confidence</td>
+<td style="text-align: left;">Use with caution - monitor outcomes</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Jefferson County</td>
+<td style="text-align: right;">58384</td>
+<td style="text-align: right;">3.7424637</td>
+<td style="text-align: left;">High Confidence</td>
+<td style="text-align: left;">Safe for algorithmic decisions</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Jersey County</td>
+<td style="text-align: right;">77607</td>
+<td style="text-align: right;">9.5828984</td>
+<td style="text-align: left;">Moderate Confidence</td>
+<td style="text-align: left;">Use with caution - monitor outcomes</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Jo Daviess County</td>
+<td style="text-align: right;">67729</td>
+<td style="text-align: right;">6.2011841</td>
+<td style="text-align: left;">Moderate Confidence</td>
+<td style="text-align: left;">Use with caution - monitor outcomes</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Johnson County</td>
+<td style="text-align: right;">63295</td>
+<td style="text-align: right;">5.4696264</td>
+<td style="text-align: left;">Moderate Confidence</td>
+<td style="text-align: left;">Use with caution - monitor outcomes</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Kane County</td>
+<td style="text-align: right;">96400</td>
+<td style="text-align: right;">1.8060166</td>
+<td style="text-align: left;">High Confidence</td>
+<td style="text-align: left;">Safe for algorithmic decisions</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Kankakee County</td>
+<td style="text-align: right;">65489</td>
+<td style="text-align: right;">4.2785811</td>
+<td style="text-align: left;">High Confidence</td>
+<td style="text-align: left;">Safe for algorithmic decisions</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Kendall County</td>
+<td style="text-align: right;">106358</td>
+<td style="text-align: right;">3.0641795</td>
+<td style="text-align: left;">High Confidence</td>
+<td style="text-align: left;">Safe for algorithmic decisions</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Knox County</td>
+<td style="text-align: right;">50263</td>
+<td style="text-align: right;">6.6410680</td>
+<td style="text-align: left;">Moderate Confidence</td>
+<td style="text-align: left;">Use with caution - monitor outcomes</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Lake County</td>
+<td style="text-align: right;">104553</td>
+<td style="text-align: right;">1.3954645</td>
+<td style="text-align: left;">High Confidence</td>
+<td style="text-align: left;">Safe for algorithmic decisions</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">LaSalle County</td>
+<td style="text-align: right;">67942</td>
+<td style="text-align: right;">3.1571046</td>
+<td style="text-align: left;">High Confidence</td>
+<td style="text-align: left;">Safe for algorithmic decisions</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Lawrence County</td>
+<td style="text-align: right;">55811</td>
+<td style="text-align: right;">12.1427676</td>
+<td style="text-align: left;">Low Confidence</td>
+<td style="text-align: left;">Requires manual review or additional data</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Lee County</td>
+<td style="text-align: right;">64588</td>
+<td style="text-align: right;">4.5503809</td>
+<td style="text-align: left;">High Confidence</td>
+<td style="text-align: left;">Safe for algorithmic decisions</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Livingston County</td>
+<td style="text-align: right;">68175</td>
+<td style="text-align: right;">4.5544554</td>
+<td style="text-align: left;">High Confidence</td>
+<td style="text-align: left;">Safe for algorithmic decisions</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Logan County</td>
+<td style="text-align: right;">62547</td>
+<td style="text-align: right;">4.7564232</td>
+<td style="text-align: left;">High Confidence</td>
+<td style="text-align: left;">Safe for algorithmic decisions</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">McDonough County</td>
+<td style="text-align: right;">48904</td>
+<td style="text-align: right;">6.7356453</td>
+<td style="text-align: left;">Moderate Confidence</td>
+<td style="text-align: left;">Use with caution - monitor outcomes</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">McHenry County</td>
+<td style="text-align: right;">100101</td>
+<td style="text-align: right;">2.3036733</td>
+<td style="text-align: left;">High Confidence</td>
+<td style="text-align: left;">Safe for algorithmic decisions</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">McLean County</td>
+<td style="text-align: right;">75356</td>
+<td style="text-align: right;">3.4383460</td>
+<td style="text-align: left;">High Confidence</td>
+<td style="text-align: left;">Safe for algorithmic decisions</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Macon County</td>
+<td style="text-align: right;">59622</td>
+<td style="text-align: right;">3.6513368</td>
+<td style="text-align: left;">High Confidence</td>
+<td style="text-align: left;">Safe for algorithmic decisions</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Macoupin County</td>
+<td style="text-align: right;">64706</td>
+<td style="text-align: right;">4.3705375</td>
+<td style="text-align: left;">High Confidence</td>
+<td style="text-align: left;">Safe for algorithmic decisions</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Madison County</td>
+<td style="text-align: right;">71759</td>
+<td style="text-align: right;">2.1056592</td>
+<td style="text-align: left;">High Confidence</td>
+<td style="text-align: left;">Safe for algorithmic decisions</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Marion County</td>
+<td style="text-align: right;">59099</td>
+<td style="text-align: right;">3.9086956</td>
+<td style="text-align: left;">High Confidence</td>
+<td style="text-align: left;">Safe for algorithmic decisions</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Marshall County</td>
+<td style="text-align: right;">64940</td>
+<td style="text-align: right;">5.7083462</td>
+<td style="text-align: left;">Moderate Confidence</td>
+<td style="text-align: left;">Use with caution - monitor outcomes</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Mason County</td>
+<td style="text-align: right;">58479</td>
+<td style="text-align: right;">5.2993382</td>
+<td style="text-align: left;">Moderate Confidence</td>
+<td style="text-align: left;">Use with caution - monitor outcomes</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Massac County</td>
+<td style="text-align: right;">57365</td>
+<td style="text-align: right;">9.4395537</td>
+<td style="text-align: left;">Moderate Confidence</td>
+<td style="text-align: left;">Use with caution - monitor outcomes</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Menard County</td>
+<td style="text-align: right;">84846</td>
+<td style="text-align: right;">6.4599392</td>
+<td style="text-align: left;">Moderate Confidence</td>
+<td style="text-align: left;">Use with caution - monitor outcomes</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Mercer County</td>
+<td style="text-align: right;">67028</td>
+<td style="text-align: right;">4.7248911</td>
+<td style="text-align: left;">High Confidence</td>
+<td style="text-align: left;">Safe for algorithmic decisions</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Monroe County</td>
+<td style="text-align: right;">100685</td>
+<td style="text-align: right;">4.7385410</td>
+<td style="text-align: left;">High Confidence</td>
+<td style="text-align: left;">Safe for algorithmic decisions</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Montgomery County</td>
+<td style="text-align: right;">61796</td>
+<td style="text-align: right;">6.0780633</td>
+<td style="text-align: left;">Moderate Confidence</td>
+<td style="text-align: left;">Use with caution - monitor outcomes</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Morgan County</td>
+<td style="text-align: right;">61188</td>
+<td style="text-align: right;">5.7560306</td>
+<td style="text-align: left;">Moderate Confidence</td>
+<td style="text-align: left;">Use with caution - monitor outcomes</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Moultrie County</td>
+<td style="text-align: right;">72833</td>
+<td style="text-align: right;">12.9089836</td>
+<td style="text-align: left;">Low Confidence</td>
+<td style="text-align: left;">Requires manual review or additional data</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Ogle County</td>
+<td style="text-align: right;">75782</td>
+<td style="text-align: right;">4.2279169</td>
+<td style="text-align: left;">High Confidence</td>
+<td style="text-align: left;">Safe for algorithmic decisions</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Peoria County</td>
+<td style="text-align: right;">63409</td>
+<td style="text-align: right;">2.3387847</td>
+<td style="text-align: left;">High Confidence</td>
+<td style="text-align: left;">Safe for algorithmic decisions</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Perry County</td>
+<td style="text-align: right;">56338</td>
+<td style="text-align: right;">6.0722780</td>
+<td style="text-align: left;">Moderate Confidence</td>
+<td style="text-align: left;">Use with caution - monitor outcomes</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Piatt County</td>
+<td style="text-align: right;">81151</td>
+<td style="text-align: right;">10.7145938</td>
+<td style="text-align: left;">Low Confidence</td>
+<td style="text-align: left;">Requires manual review or additional data</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Pike County</td>
+<td style="text-align: right;">55514</td>
+<td style="text-align: right;">6.6721908</td>
+<td style="text-align: left;">Moderate Confidence</td>
+<td style="text-align: left;">Use with caution - monitor outcomes</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Pope County</td>
+<td style="text-align: right;">57582</td>
+<td style="text-align: right;">20.5116182</td>
+<td style="text-align: left;">Low Confidence</td>
+<td style="text-align: left;">Requires manual review or additional data</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Pulaski County</td>
+<td style="text-align: right;">41038</td>
+<td style="text-align: right;">10.8436084</td>
+<td style="text-align: left;">Low Confidence</td>
+<td style="text-align: left;">Requires manual review or additional data</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Putnam County</td>
+<td style="text-align: right;">75726</td>
+<td style="text-align: right;">9.9543090</td>
+<td style="text-align: left;">Moderate Confidence</td>
+<td style="text-align: left;">Use with caution - monitor outcomes</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Randolph County</td>
+<td style="text-align: right;">63860</td>
+<td style="text-align: right;">5.1926088</td>
+<td style="text-align: left;">Moderate Confidence</td>
+<td style="text-align: left;">Use with caution - monitor outcomes</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Richland County</td>
+<td style="text-align: right;">61607</td>
+<td style="text-align: right;">9.7943416</td>
+<td style="text-align: left;">Moderate Confidence</td>
+<td style="text-align: left;">Use with caution - monitor outcomes</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Rock Island County</td>
+<td style="text-align: right;">64435</td>
+<td style="text-align: right;">3.0682083</td>
+<td style="text-align: left;">High Confidence</td>
+<td style="text-align: left;">Safe for algorithmic decisions</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">St.&nbsp;Clair County</td>
+<td style="text-align: right;">68915</td>
+<td style="text-align: right;">2.6583472</td>
+<td style="text-align: left;">High Confidence</td>
+<td style="text-align: left;">Safe for algorithmic decisions</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Saline County</td>
+<td style="text-align: right;">51710</td>
+<td style="text-align: right;">5.0222394</td>
+<td style="text-align: left;">Moderate Confidence</td>
+<td style="text-align: left;">Use with caution - monitor outcomes</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Sangamon County</td>
+<td style="text-align: right;">71653</td>
+<td style="text-align: right;">2.5749096</td>
+<td style="text-align: left;">High Confidence</td>
+<td style="text-align: left;">Safe for algorithmic decisions</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Schuyler County</td>
+<td style="text-align: right;">63737</td>
+<td style="text-align: right;">10.5825502</td>
+<td style="text-align: left;">Low Confidence</td>
+<td style="text-align: left;">Requires manual review or additional data</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Scott County</td>
+<td style="text-align: right;">70500</td>
+<td style="text-align: right;">9.7588652</td>
+<td style="text-align: left;">Moderate Confidence</td>
+<td style="text-align: left;">Use with caution - monitor outcomes</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Shelby County</td>
+<td style="text-align: right;">65585</td>
+<td style="text-align: right;">4.7968285</td>
+<td style="text-align: left;">High Confidence</td>
+<td style="text-align: left;">Safe for algorithmic decisions</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Stark County</td>
+<td style="text-align: right;">58125</td>
+<td style="text-align: right;">9.2920430</td>
+<td style="text-align: left;">Moderate Confidence</td>
+<td style="text-align: left;">Use with caution - monitor outcomes</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Stephenson County</td>
+<td style="text-align: right;">57527</td>
+<td style="text-align: right;">4.1180663</td>
+<td style="text-align: left;">High Confidence</td>
+<td style="text-align: left;">Safe for algorithmic decisions</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Tazewell County</td>
+<td style="text-align: right;">74606</td>
+<td style="text-align: right;">2.5333083</td>
+<td style="text-align: left;">High Confidence</td>
+<td style="text-align: left;">Safe for algorithmic decisions</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Union County</td>
+<td style="text-align: right;">54090</td>
+<td style="text-align: right;">9.9242004</td>
+<td style="text-align: left;">Moderate Confidence</td>
+<td style="text-align: left;">Use with caution - monitor outcomes</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Vermilion County</td>
+<td style="text-align: right;">52787</td>
+<td style="text-align: right;">3.4459242</td>
+<td style="text-align: left;">High Confidence</td>
+<td style="text-align: left;">Safe for algorithmic decisions</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Wabash County</td>
+<td style="text-align: right;">54074</td>
+<td style="text-align: right;">10.8776861</td>
+<td style="text-align: left;">Low Confidence</td>
+<td style="text-align: left;">Requires manual review or additional data</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Warren County</td>
+<td style="text-align: right;">62700</td>
+<td style="text-align: right;">11.4003190</td>
+<td style="text-align: left;">Low Confidence</td>
+<td style="text-align: left;">Requires manual review or additional data</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Washington County</td>
+<td style="text-align: right;">75111</td>
+<td style="text-align: right;">6.4504533</td>
+<td style="text-align: left;">Moderate Confidence</td>
+<td style="text-align: left;">Use with caution - monitor outcomes</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Wayne County</td>
+<td style="text-align: right;">53522</td>
+<td style="text-align: right;">7.3016703</td>
+<td style="text-align: left;">Moderate Confidence</td>
+<td style="text-align: left;">Use with caution - monitor outcomes</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">White County</td>
+<td style="text-align: right;">54605</td>
+<td style="text-align: right;">9.8177823</td>
+<td style="text-align: left;">Moderate Confidence</td>
+<td style="text-align: left;">Use with caution - monitor outcomes</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Whiteside County</td>
+<td style="text-align: right;">62828</td>
+<td style="text-align: right;">6.3124721</td>
+<td style="text-align: left;">Moderate Confidence</td>
+<td style="text-align: left;">Use with caution - monitor outcomes</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Will County</td>
+<td style="text-align: right;">103678</td>
+<td style="text-align: right;">1.3908447</td>
+<td style="text-align: left;">High Confidence</td>
+<td style="text-align: left;">Safe for algorithmic decisions</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Williamson County</td>
+<td style="text-align: right;">60325</td>
+<td style="text-align: right;">5.2598425</td>
+<td style="text-align: left;">Moderate Confidence</td>
+<td style="text-align: left;">Use with caution - monitor outcomes</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Winnebago County</td>
+<td style="text-align: right;">61738</td>
+<td style="text-align: right;">2.1639833</td>
+<td style="text-align: left;">High Confidence</td>
+<td style="text-align: left;">Safe for algorithmic decisions</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Woodford County</td>
+<td style="text-align: right;">80093</td>
+<td style="text-align: right;">5.0241594</td>
+<td style="text-align: left;">Moderate Confidence</td>
+<td style="text-align: left;">Use with caution - monitor outcomes</td>
+</tr>
+</tbody>
+</table>
+</div>
 </div>
 <p><strong>Key Recommendations:</strong></p>
 <p><strong>Your Task:</strong> Use your analysis results to provide specific guidance to the department.</p>
 <ol type="1">
-<li><p><strong>Counties suitable for immediate algorithmic implementation:</strong> [List counties with high confidence data and explain why they’re appropriate]</p></li>
-<li><p><strong>Counties requiring additional oversight:</strong> [List counties with moderate confidence data and describe what kind of monitoring would be needed]</p></li>
-<li><p><strong>Counties needing alternative approaches:</strong> [List counties with low confidence data and suggest specific alternatives - manual review, additional surveys, etc.]</p></li>
+<li><strong>Counties suitable for immediate algorithmic implementation:</strong></li>
 </ol>
+<p>There are 38 counties that fall within the High Confidence category. I will not list them all here, but feel free to refer to the table above, listed in alphabetical order, to find counties you are looking for. They are appropriate for algorithmic use because their error margins are low and risk very little over/under estimation of median income, and thus if algorithms are designed well, they will inform accurate policy decisions.</p>
+<ol start="2" type="1">
+<li><strong>Counties requiring additional oversight:</strong></li>
+</ol>
+<p>There are 49 counties that fall within the Moderate Confidence category. These counties have somewhat reliable median income estimates, but if used for algorithmic decision-making, outcomes should be monitored, and if possible, proxies or other data sources should be used to confirm or dispel estimates.</p>
+<ol start="3" type="1">
+<li><strong>Counties needing alternative approaches:</strong></li>
+</ol>
+<p>There are 15 counties that fall within the Low Confidence category. These counties have unreliable data and likely provide inaccurate estimates of median income. For these counties, additional data would be required to make any decisions as not to risk misinformed decisions. Proxies, other data sources, or non-algorithmic approaches may be necessary.</p>
 </section>
 <section id="questions-for-further-investigation" class="level2">
 <h2 class="anchored" data-anchor-id="questions-for-further-investigation">Questions for Further Investigation</h2>
 <p>[List 2-3 questions that your analysis raised that you’d like to explore further in future assignments. Consider questions about spatial patterns, time trends, or other demographic factors.]</p>
+<p>1: Is it possible to accumulate other data to lower margins of error by confirming estimates – if so, how do you know if the additional data successfully confirms or denies an estimate?</p>
+<p>2: If there is a large data set like the ACS survey for a whole city, but within each census tract the data has high errors, at what point of scale of the data is it acceptable to use? For instance, if I know that for a group of census tracts all have high errors on their racial demographics, at what geographic scale is it acceptable to use them for decisions – and how do you know?</p>
+<p>3: How frequently does unreliable data get used in policy decisions? Is there a way to measure its effects?</p>
 </section>
 </section>
 <section id="technical-notes" class="level1">

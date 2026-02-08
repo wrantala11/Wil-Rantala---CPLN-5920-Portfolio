@@ -52,13 +52,16 @@ If there is a special character like a colon, you need use double quote mark so 
 
 ```{r setup}
 # Load required packages (hint: you need tidycensus, tidyverse, and knitr)
-
+library(tidycensus)
+library(tidyverse)
+library(knitr)
 # Set your Census API key
 
 # Choose your state for analysis - assign it to a variable called my_state
+my_state <- "Illinois"
 ```
 
-**State Selection:** I have chosen **[Your State Name]** for this analysis because: [Brief explanation of why you chose this state]
+**State Selection:** I have chosen **Illinois** for this analysis because: I am from Chicago and am interested in learning more about general Census data information for my home state! Illinois has some very different regions -- Chicago (Cook County) and surrounding counties are quite different from the rest of the state, so there should be a good variety of trends.
 
 # Part 2: County-Level Resource Assessment
 
@@ -78,10 +81,25 @@ If there is a special character like a colon, you need use double quote mark so 
 ```{r county-data}
 # Write your get_acs() code here
 
+county_data <- get_acs(
+  geography = "county",
+  variables = c(
+    med_income = "B19013_001", 
+    tot_pop = "B01003_001"
+    ),
+  state = my_state,
+  year = 2022,
+  output = "wide"
+)
+
 # Clean the county names to remove state name and "County" 
 # Hint: use mutate() with str_remove()
 
+county_data <- county_data %>%
+  mutate(county_name = str_remove(NAME, paste0(", ", "Illinois")))
+
 # Display the first few rows
+glimpse(county_data)
 ```
 
 ## 2.2 Data Quality Assessment
@@ -100,9 +118,19 @@ If there is a special character like a colon, you need use double quote mark so 
 
 ```{r income-reliability}
 # Calculate MOE percentage and reliability categories using mutate()
+county_data <- county_data %>%
+  mutate(MOE_percent = (med_incomeM / med_incomeE) * 100)
+
+county_data <- county_data %>%
+  mutate(reliability = case_when(MOE_percent < 5 ~ 'High Confidence',
+                                 MOE_percent <= 10 ~ 'Moderate Confidence',
+                                 TRUE ~ 'Low Confidence'))
 
 # Create a summary showing count of counties in each reliability category
 # Hint: use count() and mutate() to add percentages
+reliability_summary <- county_data %>%
+  count(reliability, name = "counties") %>%
+    mutate(percent = counties / sum(counties) * 100)
 ```
 
 ## 2.3 High Uncertainty Counties
@@ -119,13 +147,23 @@ If there is a special character like a colon, you need use double quote mark so 
 
 ```{r high-uncertainty}
 # Create table of top 5 counties by MOE percentage
+top5MOE <- county_data %>%
+  arrange(desc(MOE_percent)) %>%
+    slice(1:5) %>%
+      select(county_name, med_incomeE, med_incomeM, MOE_percent, reliability)
 
 # Format as table with kable() - include appropriate column names and caption
+kable(top5MOE, col.names = c(
+  "County", "Median Household Income", "Margin of Error", "MOE %", "Reliability"),
+  caption = "Five IL Counties with the Highest MOE"
+)
 ```
 
 **Data Quality Commentary:**
 
 [Write 2-3 sentences explaining what these results mean for algorithmic decision-making. Consider: Which counties might be poorly served by algorithms that rely on this income data? What factors might contribute to higher uncertainty?]
+
+For these counties with such poor data reliability, algorithmic decision-making may over or underestimate allocated resources/attention/program allocation. For instance, Pope and Moultrie Counties have estimated median incomes 20k apart, but their near 10k MOEs are great enough that their actual median incomes could feasibly be very similar. The high MOEs could have been caused by low population (and thus low sample sizes), or by large variability in the data.
 
 # Part 3: Neighborhood-Level Analysis
 
@@ -138,12 +176,18 @@ If there is a special character like a colon, you need use double quote mark so 
 ```{r select-counties}
 # Use filter() to select 2-3 counties from your county_reliability data
 # Store the selected counties in a variable called selected_counties
-
+selected_counties <- county_data %>%
+  filter(county_name == "Cook County" | county_name == "Pulaski County" | county_name == "Effingham County") %>%
+  select(county_name, med_incomeE, MOE_percent, reliability)
 # Display the selected counties with their key characteristics
 # Show: county name, median income, MOE percentage, reliability category
+
+kable(selected_counties, col.names = c(
+  "County", "Median Household Income", "MOE %", "Reliability"),
+  caption = "Three IL Counties with Varying Reliability")
 ```
 
-**Comment on the output:** [write something :)]
+**Comment on the output:** Cook County, being the most populous in the state, has a less than 1% MOE to Estimate ratio, which makes sense as the data set is massive compared to some of the less populous counties. Pulaski County has a far lower estimated median HH income compared to Cook and Effingham Counties, and also has a much worse reliability score. I wonder if counties with lower income estimates would also in general have worse reliability, as larger cities and towns often have higher median incomes.
 
 ## 3.2 Tract-Level Demographics
 
@@ -158,14 +202,43 @@ If there is a special character like a colon, you need use double quote mark so 
 
 ```{r tract-demographics}
 # Define your race/ethnicity variables with descriptive names
-
+tract_variables = c(white = "B03002_003",
+                    black = "B03002_004",
+                    hispanic = "B03002_012",
+                    total_pop = "B03002_001")
 # Use get_acs() to retrieve tract-level data
 # Hint: You may need to specify county codes in the county parameter
-
+tract_data <- get_acs(
+  geography = "tract",
+  variables = tract_variables,
+  state = my_state,
+  county = c("Cook", "Effingham", "Pulaski"),
+  year = 2022,
+  output = "wide"
+)
 # Calculate percentage of each group using mutate()
 # Create percentages for white, Black, and Hispanic populations
-
+tract_data <- tract_data %>%
+  mutate(white_per = whiteE / total_popE * 100, 
+         black_per = blackE / total_popE * 100,
+         hispanic_per = hispanicE / total_popE * 100)
 # Add readable tract and county name columns using str_extract() or similar
+### I looked up the GEOID FIPS and tract codes to use the GEOID to extract the county and tract names for each tract. Then I selected for certain digits within the 11 digit GEOID using str_sub.
+tract_data <- tract_data %>%
+  mutate(
+    il_county = str_sub(GEOID, 3, 5), #select the 3-5 digits for county
+    tract_number = str_sub(GEOID, 6, 11) #select the 6-11 digits for tract
+  )
+
+### now I have to change the county codes (031, 049, 153) to their associated names (Cook, Effingham, Pulaski)
+
+tract_data <- tract_data %>%
+  mutate(
+    county_name = recode(il_county,
+                         "031" = "Cook",
+                         "049" = "Effingham",
+                         "153" = "Pulaski")
+    )
 ```
 
 ## 3.3 Demographic Analysis
@@ -176,10 +249,31 @@ If there is a special character like a colon, you need use double quote mark so 
 # Find the tract with the highest percentage of Hispanic/Latino residents
 # Hint: use arrange() and slice() to get the top tract
 
+highest_hisp <- tract_data %>%
+  arrange(desc(hispanic_per)) %>%
+    slice(1) %>%
+      select(county_name, tract_number, hispanic_per, black_per, white_per, total_popE)
+
+#The tract with the highest percent latino/hispanic population is tract 301308 in Cook County (Chicago) with 98.83%.
+
 # Calculate average demographics by county using group_by() and summarize()
 # Show: number of tracts, average percentage for each racial/ethnic group
 
+demo_by_county <- tract_data %>%
+  group_by(county_name) %>%
+  summarize(
+    n_tracts = n(),
+    avg_white = mean(white_per, na.rm = TRUE),
+    avg_black = mean(black_per, na.rm = TRUE),
+    avg_hisp = mean(hispanic_per, na.rm = TRUE)
+  )
+
 # Create a nicely formatted table of your results using kable()
+
+kable(demo_by_county, col.names = c(
+  "County", "Number of Tracts", "Average % White", "Average % Black", "Average % Hispanic"),
+  caption = "Three IL Counties and their Racial Demographics")
+
 ```
 
 # Part 4: Comprehensive Data Quality Evaluation
@@ -197,10 +291,32 @@ If there is a special character like a colon, you need use double quote mark so 
 # Calculate MOE percentages for white, Black, and Hispanic variables
 # Hint: use the same formula as before (margin/estimate * 100)
 
+tract_data <- tract_data %>%
+  mutate(MOE_pct_white = (whiteM / whiteE) * 100,
+         MOE_pct_black = (blackM / blackE) * 100,
+         MOE_pct_hispanic = (hispanicM / hispanicE) * 100)
+
 # Create a flag for tracts with high MOE on any demographic variable
 # Use logical operators (| for OR) in an ifelse() statement
 
+tract_data <- tract_data %>%
+  mutate(higherror = ifelse(
+    MOE_pct_white > 30 |
+    MOE_pct_black > 30 |
+    MOE_pct_hispanic > 30,
+    1, 0
+  ))
+
 # Create summary statistics showing how many tracts have data quality issues
+
+tract_data %>%
+  summarize(
+    total_tracts = n(),
+    n_flagged = sum(higherror),
+    per_flagged = mean(higherror) * 100 
+    #since higherror is either 1 or 0, the mean * 100 works as the percent flagged
+  )
+
 ```
 
 ## 4.2 Pattern Analysis
@@ -212,11 +328,25 @@ If there is a special character like a colon, you need use double quote mark so 
 # Calculate average characteristics for each group:
 # - population size, demographic percentages
 
+quality_dist <- tract_data %>%
+  group_by(higherror) %>%
+  summarize(
+    avg_pop = mean(total_popE, na.rm = TRUE),
+    avg_pctwhite = mean(white_per, na.rm = TRUE),
+    avg_pctblack = mean(black_per, na.rm = TRUE),
+    avg_pcthisp = mean(hispanic_per, na.rm = TRUE)
+  )
+
 # Use group_by() and summarize() to create this comparison
 # Create a professional table showing the patterns
+
+kable(quality_dist, col.names = c(
+  "MOE Percent > 30%", "Average Population", "Average % White", "Average % Black", "Average % Hispanic"),
+  caption = "High and Low MOE Tracts and their Demographics")
+
 ```
 
-**Pattern Analysis:** [Describe any patterns you observe. Do certain types of communities have less reliable data? What might explain this?]
+**Pattern Analysis:** Tracts with any MOEs greater than 30% on average high lower populations, a higher proportion of White people, and lower proportion of Hispanic people. It must be noted that, while not listed on this table, around 99% of tracts had at least one demographic category with an MOE greater than 30%, so the unflagged tracts had a much smaller sample size. That being said, it would make sense for tracts with lower MOEs to gave greater average populations, as greater sample sizes often have lower MOEs.
 
 
 # Part 5: Policy Recommendations
@@ -232,8 +362,14 @@ If there is a special character like a colon, you need use double quote mark so 
 4. **Strategic Recommendations**: What should the Department implement to address these systematic issues?
 
 **Executive Summary:**
+1. Across analyses in this lab, one key pattern is that lower population counties tend to have lower incomes, and higher margins of error. At the county level, population, income, and other demographic analyses are all possible with less risk of great error, but at the census tract level, errors become too large to confidently make assumptions or inform policy. For some data categories like population or median income (depending on variability in the sample population), errors at the tract level are potentially low enough to inform decisions, but demographic data such as race that divides the population into smaller groups and increasing MOEs, is much less reliable.
 
-[Your integrated 4-paragraph summary here]
+2. In my findings, counties with smaller populations and fewer census tracts face greater risk of algorithmic bias as their errors for median income and other social/demographic factors are far greater than counties (such as Cook) with larger populations. Other at-risk groups include populations in highly racially diverse census tracts, as each subset of the tract's population is smaller and faces greater error due to a small sample size. Great magins of error may influence policies to afford greater privelages to populations that need them less than others. 
+
+3. The underlying factors increasing risk and bias are small sample sizes, and great variability within those samples. For instance, if a county's residents have widely ranging incomes, the median income based on a sample population has a higher likelihood of being inaccurate for the whole population. Another risk is using small data samples (such as census tracts) to inform policies -- if resources are rationed based on census tract income, race, or other data, then errors are likely to create misalignments with reality.
+
+4. To address systematic issues, algorithms that influence policy decisions should avoid smaller sample datasets where possible, and supplement their data with 5-year ACS estimates, Decennial Census data, and other available sources to inform decisions. Means beyond conventional government data collection may be deployed depending on policy goals--for instance, if a state government is determining which counties to allocate more funding for transportation and infrastructure, then there should be infrastructure quality assessments, traffic surveys, and travel demand modeling in addition to whatever census or ACS data may be used.
+
 
 ## 6.3 Specific Recommendations
 
@@ -243,27 +379,52 @@ If there is a special character like a colon, you need use double quote mark so 
 # Create a summary table using your county reliability data
 # Include: county name, median income, MOE percentage, reliability category
 
+county_decision <- county_data %>%
+  select(county_name, med_incomeE, MOE_percent, reliability)
+
 # Add a new column with algorithm recommendations using case_when():
 # - High Confidence: "Safe for algorithmic decisions"
 # - Moderate Confidence: "Use with caution - monitor outcomes"  
 # - Low Confidence: "Requires manual review or additional data"
 
+county_decision <- county_decision %>%
+  mutate(algo_rec = case_when(
+    MOE_percent <= 5 ~ 'Safe for algorithmic decisions',
+    MOE_percent <= 10 ~ 'Use with caution - monitor outcomes',
+    TRUE ~ 'Requires manual review or additional data'))
+
 # Format as a professional table with kable()
+
+kable(county_decision, col.names = c(
+        "IL County", "Median Income", "Margin of Error percent", "Reliability", "Algorithmic Use Recommendation"),
+      caption = "Illinois Counties Median Incomes and Data Reliability")
 ```
 
 **Key Recommendations:**
 
 **Your Task:** Use your analysis results to provide specific guidance to the department.
 
-1. **Counties suitable for immediate algorithmic implementation:** [List counties with high confidence data and explain why they're appropriate]
+1. **Counties suitable for immediate algorithmic implementation:**
 
-2. **Counties requiring additional oversight:** [List counties with moderate confidence data and describe what kind of monitoring would be needed]
+There are 38 counties that fall within the High Confidence category. I will not list them all here, but feel free to refer to the table above, listed in alphabetical order, to find counties you are looking for. They are appropriate for algorithmic use because their error margins are low and risk very little over/under estimation of median income, and thus if algorithms are designed well, they will inform accurate policy decisions. 
 
-3. **Counties needing alternative approaches:** [List counties with low confidence data and suggest specific alternatives - manual review, additional surveys, etc.]
+2. **Counties requiring additional oversight:**
+
+There are 49 counties that fall within the Moderate Confidence category. These counties have somewhat reliable median income estimates, but if used for algorithmic decision-making, outcomes should be monitored, and if possible, proxies or other data sources should be used to confirm or dispel estimates. 
+
+3. **Counties needing alternative approaches:**
+
+There are 15 counties that fall within the Low Confidence category. These counties have unreliable data and likely provide inaccurate estimates of median income. For these counties, additional data would be required to make any decisions as not to risk misinformed decisions. Proxies, other data sources, or non-algorithmic approaches may be necessary.
 
 ## Questions for Further Investigation
 
 [List 2-3 questions that your analysis raised that you'd like to explore further in future assignments. Consider questions about spatial patterns, time trends, or other demographic factors.]
+
+1: Is it possible to accumulate other data to lower margins of error by confirming estimates -- if so, how do you know if the additional data successfully confirms or denies an estimate?
+
+2: If there is a large data set like the ACS survey for a whole city, but within each census tract the data has high errors, at what point of scale of the data is it acceptable to use? For instance, if I know that for a group of census tracts all have high errors on their racial demographics, at what geographic scale is it acceptable to use them for decisions -- and how do you know?
+
+3: How frequently does unreliable data get used in policy decisions? Is there a way to measure its effects?
 
 # Technical Notes
 
