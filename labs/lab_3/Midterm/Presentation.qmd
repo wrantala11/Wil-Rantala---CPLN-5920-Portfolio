@@ -10,6 +10,8 @@ format:
     incremental: false
     smaller: true
     scrollable: true
+execute: 
+  freeze: true
 editor: visual
 author: "Shuarya Chauhan, Indrajeet Chavan, Vedika Jawa, and Wil Rantala"
 ---
@@ -60,13 +62,14 @@ author: "Shuarya Chauhan, Indrajeet Chavan, Vedika Jawa, and Wil Rantala"
 knitr::include_graphics("Visuals/HomePriceMap.png")
 ```
 
-- **Center City** and **Northwest Philly** have many of the highest prices, with some areas having median sale values in the $ millions
+-   **Center City** and **Northwest Philly** have many of the highest prices, with some areas having median sale values in the \$ millions
 
-- Northeast Philly has median sale prices in the ~$500,000 range
+-   Northeast Philly has median sale prices in the \~\$500,000 range
 
-- Higher Values in West Philly are concentrated near University City
+-   Higher Values in West Philly are concentrated near University City
 
 ## What Drives Prices?
+
 ```{r}
 #| echo: false
 #| fig-align: center
@@ -74,16 +77,15 @@ knitr::include_graphics("Visuals/HomePriceMap.png")
 knitr::include_graphics("Visuals/sqft_vs_price.png")
 ```
 
-- **Living Area has a powerful positive correlation with home sale price**
+-   **Living Area has a powerful positive correlation with home sale price**
 
-- In preliminary data analysis, living space came out as a key driver of housing prices
+-   In preliminary data analysis, living space came out as a key driver of housing prices
 
-- In our actual models, we use the natural log of sale price to achieve a more normal distribution
+-   In our actual models, we use the natural log of sale price to achieve a more normal distribution
 
 ## Model Creation
 
 **We made four models, each progressively more complex with varying predictive data types**
-
 
 **Model 1:** Spatial Data
 
@@ -92,7 +94,6 @@ knitr::include_graphics("Visuals/sqft_vs_price.png")
 **Model 3:** Structural, Census, and Spatial Data
 
 **Model 4:** Structural, Census, Spatial, and Fixed Effect Data
-
 
 ## Model Comparison
 
@@ -103,8 +104,8 @@ knitr::include_graphics("Visuals/sqft_vs_price.png")
 knitr::include_graphics("Visuals/4models.png")
 ```
 
-- **Spatial Data on its own is a powerful predictor**
-- **Adding a fixed effect component to the model helped to improve predictive power -- not model fit**
+-   **Spatial Data on its own is a powerful predictor**
+-   **Adding a fixed effect component to the model helped to improve predictive power -- not model fit**
 
 ## Cross Validation Results
 
@@ -115,7 +116,7 @@ knitr::include_graphics("Visuals/4models.png")
 knitr::include_graphics("Visuals/cv_compare.png")
 ```
 
-- **Model 4 has the strongest predictive ability with the lowest RMSE and MAE, and the highest R^2**
+-   **Model 4 has the strongest predictive ability with the lowest RMSE and MAE, and the highest R\^2**
 
 ## Full Model Performance
 
@@ -126,7 +127,7 @@ knitr::include_graphics("Visuals/cv_compare.png")
 knitr::include_graphics("Visuals/predicted_vs_actual.png")
 ```
 
-- **The Predicted vs. Actual Values of ln Sale Price** of the model including four types of predictive data had the best RMSE and R^2, but still has less-than-ideal predictive power
+-   **The Predicted vs. Actual Values of ln Sale Price** of the model including four types of predictive data had the best RMSE and R\^2, but still has less-than-ideal predictive power
 
 ## Key Findings & Recommendations
 
@@ -134,47 +135,44 @@ knitr::include_graphics("Visuals/predicted_vs_actual.png")
 
 **Top Predictors:**
 
-- Total Livable Area (coef = 0.0003; p < 2e-16)
-- Median Income (coef = 0.000001; p < 2e-06)
-- Crime Density (coef = -0.00005; p < 0.0002)
+-   Total Livable Area (coef = 0.0003; p \< 2e-16)
+-   Median Income (coef = 0.000001; p \< 2e-06)
+-   Crime Density (coef = -0.00005; p \< 0.0002)
 
 **Worst Predictor:**
 
-- Distance to Transit (coef = 0.000007; p = 0.61)
+-   Distance to Transit (coef = 0.000007; p = 0.61)
 
 ## Key Findings & Recommendations
 
 **Recommendations:**
 
-- Comprehensive neighborhood investment (not **just** focusing transit, green space, or crime)
+-   Comprehensive neighborhood investment (not **just** focusing transit, green space, or crime)
 
-- Including interaction terms of spatial variables and income could be key improvements it may matter more in high/low income neighborhoods
+-   Including interaction terms of spatial variables and income could be key improvements it may matter more in high/low income neighborhoods
 
-- Importance of distance to transit varies greatly in neighborhoods depending on their demographics and other spatial features
+-   Importance of distance to transit varies greatly in neighborhoods depending on their demographics and other spatial features
 
-- Census Tracts of NE Philly were difficult to predict
-
+-   Census Tracts of NE Philly were difficult to predict
 
 ## Limitations & Next Steps
 
 **Limitations and Concerns**
 
-- Multicollinearity
+-   Multicollinearity
 
-- Variables as Proxies (e.g. crime density is dependent on police activity and arrests)
+-   Variables as Proxies (e.g. crime density is dependent on police activity and arrests)
 
-- ACS margins of error (espacially at the block level)
+-   ACS margins of error (espacially at the block level)
 
-- Temporal restraint (applicable for other years?)
+-   Temporal restraint (applicable for other years?)
 
 **Next Steps**
 
-- Interaction models with transit and other variables to understand verying relationships
+-   Interaction models with transit and other variables to understand verying relationships
 
-- Better distance metrics (walking/driving times)
+-   Better distance metrics (walking/driving times)
 
-- Additional data (environmental threats, school quality)
+-   Additional data (environmental threats, school quality)
 
 ## Questions?
-
-
