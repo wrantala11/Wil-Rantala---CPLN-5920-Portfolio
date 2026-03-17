@@ -1,0 +1,194 @@
+---
+title: "lab3"
+format: html
+---
+
+```{r}
+# Load required packages
+library(tidyverse)
+library(sf)
+library(here)
+library(lubridate)
+library(tidycensus)
+library(tigris)
+
+# Optional (for cleaner model outputs later)
+library(modelsummary)
+
+philly_sales <- st_read(("data/opa_properties_public.geojson"))
+
+philly_sales <- philly_sales %>%
+  mutate(
+    sale_date = as.Date(sale_date)
+  )
+
+summary(philly_sales)
+
+
+# FILTER the dataset for all observations where sale date is 2023-2024, sale price is greater than 10,000 and there are no NAs in sale_price, number_of_bedrooms, number_of_bathrooms, or location
+philly_sales_2324 <- philly_sales %>%
+  filter(
+    year(sale_date) %in% c(2023, 2024),
+    !is.na(sale_price),
+    sale_price > 10000,
+    sale_price < 2000000
+  )%>%
+  filter(!is.na(number_of_bedrooms),
+         !is.na(number_of_bathrooms),
+         !is.na(location))
+
+# FILTER for just Residential, Apartment, and Mixed use properties
+### Category codes 1, 2, and 3 ignore vacant lots and special use cases such as houses of worship or domatories
+philly_sales_res <- philly_sales_2324 %>%
+  filter(
+    category_code %in% c(1,2,3) 
+  )
+
+
+### Let's try a baseline model:
+baseline_model <- lm(sale_price ~ total_livable_area + number_of_bathrooms, data = philly_sales_res)
+
+
+summary(baseline_model)
+
+hist(philly_sales_res$sale_price)
+
+
+
+# NOW LET'S DOWNLOAD ACS DATA
+### Including education, poverty level, median hh income, total pop
+
+acs_vars <- c(
+  # Population
+  total_pop          = "B01003_001",
+ 
+  # Median Household Income
+  median_hh_income   = "B19013_001",
+ 
+  # Poverty
+  poverty_total      = "B17001_001",   # Total population for whom poverty is determined
+  poverty_below      = "B17001_002",   # Population below poverty level
+ 
+  # Degree Attainment (25+ population)
+  edu_total          = "B15003_001",   # Total population 25+
+  edu_bachelors      = "B15003_022",   # Bachelor's degree
+  edu_masters        = "B15003_023",   # Master's degree
+  edu_professional   = "B15003_024",   # Professional degree
+  edu_doctorate      = "B15003_025"    # Doctorate degree
+)
+
+philly_tracts <- get_acs(
+  geography = "tract",          # Changed from "block group" to "tract"
+  variables = acs_vars,
+  state     = "PA",
+  county    = "Philadelphia",
+  year      = 2024,             # Most recent 5-year ACS
+  survey    = "acs5",
+  geometry  = TRUE,             # Pulls sf geometry for spatial analysis
+  output    = "wide"            # One row per tract
+)
+ 
+# NOW LET'S CLEAN THE ACS DATA AND DERIVE VARIABLE
+
+philly_tracts_clean <- philly_tracts %>%
+  mutate(area_km2 = as.numeric(st_area(geometry)) / 1e6,
+         pop_density = total_popE / area_km2,
+         poverty_rate = (poverty_belowE / poverty_totalE) * 100,
+         edu_college_plus = edu_bachelorsE + edu_mastersE + edu_professionalE + edu_doctorateE,
+         college_rate = (edu_college_plus / edu_totalE) * 100
+      ) %>%
+  select(
+    GEOID, NAME, total_popE, pop_density, median_hh_incomeE, poverty_rate, college_rate, geometry
+  )
+
+glimpse(philly_tracts_clean)
+
+### NOW LETS SAVE AS A GEOJSON
+
+# Save as GeoJSON
+st_write(philly_tracts_clean, "philly_acs_tract.geojson", delete_if_exists = TRUE)
+
+### NOW CLEAN AND JOIN TO SALES GEOJSON
+
+philly_tracts_clean <- st_transform(philly_tracts_clean, st_crs(philly_sales_res))
+
+sales_with_acs <- st_join(philly_sales_res, philly_tracts_clean, join = st_within)
+
+# NEXT LET'S DOWNLOAD AND LOAD SOME SPATIAL FEATURES (SEPTA, Parks, and EPA walkscore)
+### SEPTA STOPS: https://opendataphilly.org/datasets/septa-routes-stops-locations/
+### PARKS AND RECREATION PROPERTIES: https://opendataphilly.org/datasets/ppr-properties/
+### EPA WALKSCORES: https://edg.epa.gov/EPADataCommons/public/OA/EPA_SmartLocationDatabase_V3_Jan_2021_Final.csv
+
+##LETS START WITH WALKSCORES:
+#Walkscore requires a paid API, so we used a free EPA alternative:
+epa_walk <- read_csv("data/EPA_SmartLocationDatabase_V3_Jan_2021_Final.csv")
+
+# Filter to Philadelphia (FIPS county code 42101)
+philly_walk <- epa_walk %>%
+  filter(STATEFP == 42, COUNTYFP == 101)
+# Make a GEOID from scratch to match with GEOIDs in the sales_with_acs table
+### Necessary because the EPA csv used scientific notation for its GEOID and lost its specificity
+philly_walk_bg <- philly_walk %>%
+  filter(STATEFP == 42, COUNTYFP == 101) %>%
+  mutate(GEOID_BG = paste0(
+    str_pad(STATEFP, 2, pad = "0"),
+    str_pad(COUNTYFP, 3, pad = "0"),
+    str_pad(TRACTCE, 6, pad = "0"),
+    str_pad(BLKGRPCE, 1, pad = "0")   # Add block group digit
+  )) %>%
+  group_by(GEOID_BG) %>%
+  summarise(walkability = mean(NatWalkInd, na.rm = TRUE))
+
+
+# NOW LET'S DO SEPTA STOPS
+SEPTA_stops <- st_read(("data/Transit_Stops_(Spring_2025).geojson"))
+# st_transform to use the same projection
+SEPTA_stops <- st_transform(SEPTA_stops, st_crs(sales_with_acs))
+
+# Distance from each home to nearest SEPTA stop (in meters)
+nearest_stop <- st_nearest_feature(sales_with_acs, SEPTA_stops)
+sales_with_acs$dist_to_septa <- st_distance(
+  sales_with_acs,
+  SEPTA_stops[nearest_stop, ],
+  by_element = TRUE
+) %>% as.numeric()
+
+
+# NOW LET'S DO PARKS DATA
+parks <- st_read("data/PPR_Properties.geojson")
+
+#make sure the CRS matches
+parks <- st_transform(parks, st_crs(sales_with_acs))
+
+#Distance from each home to nearest park (in meters)
+nearest_park <- st_nearest_feature(sales_with_acs, parks)
+sales_with_acs$dist_to_park <- st_distance(
+  sales_with_acs,
+  parks[nearest_park, ],
+  by_element = TRUE
+) %>% as.numeric()
+
+
+# OK NOW LETS GET BLOCK GROUP BOUNDARIES SO WE CAN JOIN WALKABILITY DATA
+philly_bg <- block_groups(state = "PA", county = "Philadelphia", year = 2024) %>%
+  st_transform(st_crs(sales_with_acs))
+#Spatial join to get block group GEOID for each home
+sales_with_acs <- st_join(
+  sales_with_acs,
+  philly_bg %>% select(GEOID_BG = GEOID),
+  join = st_within
+  )
+
+# Now let's join the walkability scores on the block group GEOID
+sales_with_acs <- sales_with_acs %>%
+  left_join(philly_walk_bg, by = "GEOID_BG")
+
+#Let's just run some checks to see if anything looks off
+sales_with_acs %>%
+  st_drop_geometry() %>%
+  select(sale_price, total_livable_area, number_of_bedrooms, pop_density, median_hh_incomeE, poverty_rate, college_rate, walkability, dist_to_septa, dist_to_park) %>%
+  summary()
+
+hist(sales_with_acs$sale_price)
+
+```

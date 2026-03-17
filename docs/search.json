@@ -299,5 +299,138 @@
     "title": "Lab 2: Spatial Analysis and Visualization",
     "section": "Submission Requirements",
     "text": "Submission Requirements\nWhat to submit:\n\nRendered HTML document posted to your course portfolio with all code, outputs, maps, and text\n\nUse embed-resources: true in YAML so it’s a single file\nAll code should run without errors\nAll maps and charts should display correctly\n\nSubmit the correct and working links of your assignment on Canvas"
+  },
+  {
+    "objectID": "labs/lab_3/Presentation.html#predicting-philly-housing-prices-why-and-how",
+    "href": "labs/lab_3/Presentation.html#predicting-philly-housing-prices-why-and-how",
+    "title": "Modeling Home Sale Prices in Philadelphia",
+    "section": "Predicting Philly Housing Prices: Why and How?",
+    "text": "Predicting Philly Housing Prices: Why and How?\nPolicy Implications:\n\nPlanners may use predictions to evaluate the impact of new transit developments, zoning changes, or parks on property values and affordability\nHelps justify public investment by giving a dollar value to neighborhood amenities\nHelps to understand urban sociological shifts and demographic changes"
+  },
+  {
+    "objectID": "labs/lab_3/Presentation.html#publicly-available-data-using-r",
+    "href": "labs/lab_3/Presentation.html#publicly-available-data-using-r",
+    "title": "Modeling Home Sale Prices in Philadelphia",
+    "section": "Publicly available data using R",
+    "text": "Publicly available data using R"
+  },
+  {
+    "objectID": "labs/lab_3/Presentation.html#quarto",
+    "href": "labs/lab_3/Presentation.html#quarto",
+    "title": "Modeling Home Sale Prices in Philadelphia",
+    "section": "Quarto",
+    "text": "Quarto\nQuarto enables you to weave together content and executable code into a finished presentation. To learn more about Quarto presentations see https://quarto.org/docs/presentations/."
+  },
+  {
+    "objectID": "labs/lab_3/Presentation.html#bullets",
+    "href": "labs/lab_3/Presentation.html#bullets",
+    "title": "Modeling Home Sale Prices in Philadelphia",
+    "section": "Bullets",
+    "text": "Bullets\nWhen you click the Render button a document will be generated that includes:\n\nContent authored with markdown\nOutput from executable code"
+  },
+  {
+    "objectID": "labs/lab_3/Presentation.html#code",
+    "href": "labs/lab_3/Presentation.html#code",
+    "title": "Modeling Home Sale Prices in Philadelphia",
+    "section": "Code",
+    "text": "Code\nWhen you click the Render button a presentation will be generated that includes both content and the output of embedded code. You can embed code like this:\n\n\n[1] 2"
+  },
+  {
+    "objectID": "labs/lab_3/Presentation.html#predicting-philly-housing-prices-why",
+    "href": "labs/lab_3/Presentation.html#predicting-philly-housing-prices-why",
+    "title": "Modeling Home Sale Prices in Philadelphia",
+    "section": "Predicting Philly Housing Prices: Why?",
+    "text": "Predicting Philly Housing Prices: Why?\nPolicy Implications - insights into housing prices enable policymakers to evaluate the impact of monetary, zoning, planning, etc. policies on context-specific affordability"
+  },
+  {
+    "objectID": "labs/lab_3/Presentation.html#predicting-philly-housing-prices",
+    "href": "labs/lab_3/Presentation.html#predicting-philly-housing-prices",
+    "title": "Modeling Home Sale Prices in Philadelphia",
+    "section": "Predicting Philly Housing Prices",
+    "text": "Predicting Philly Housing Prices\nWhy?\n\nPlanners may use predictions to evaluate the impact of new transit developments, zoning changes, or parks on property values and affordability\nHelps justify public investment by giving a dollar value to neighborhood amenities\nHelps to understand urban sociological shifts and demographic changes\nAccurate home valuation for property taxes\n\nHow?\n\nPublicly available data\nUsing R, a free statistical software"
+  },
+  {
+    "objectID": "labs/lab_3/Presentation.html#data-sources",
+    "href": "labs/lab_3/Presentation.html#data-sources",
+    "title": "Modeling Home Sale Prices in Philadelphia",
+    "section": "Data Sources",
+    "text": "Data Sources\nProperty Sales from 2023-2024\n\nCleaned to only include residential properties sold above $10000 (n = 27792)\nIncluding home-level data such as square footage, bedrooms, and building type\n\nACS 5-year 2023 data at the Block Group level\n\nIncluding Population, Median Income, Poverty, Educational Attainment, Employment, and Owner Occupancy Demographic Data\n\nGoogle Maps\n\nPhiladelphia City Hall Location"
+  },
+  {
+    "objectID": "labs/lab_3/Presentation.html#where-are-the-___",
+    "href": "labs/lab_3/Presentation.html#where-are-the-___",
+    "title": "Modeling Home Sale Prices in Philadelphia",
+    "section": "Where are the ___ ?",
+    "text": "Where are the ___ ?"
+  },
+  {
+    "objectID": "labs/lab_3/Presentation.html#what-drives-prices",
+    "href": "labs/lab_3/Presentation.html#what-drives-prices",
+    "title": "Modeling Home Sale Prices in Philadelphia",
+    "section": "What Drives Prices?",
+    "text": "What Drives Prices?"
+  },
+  {
+    "objectID": "labs/lab_3/Presentation.html#model-comparison",
+    "href": "labs/lab_3/Presentation.html#model-comparison",
+    "title": "Modeling Home Sale Prices in Philadelphia",
+    "section": "Model Comparison",
+    "text": "Model Comparison"
+  },
+  {
+    "objectID": "labs/lab_3/Presentation.html#top-predictors",
+    "href": "labs/lab_3/Presentation.html#top-predictors",
+    "title": "Modeling Home Sale Prices in Philadelphia",
+    "section": "Top Predictors",
+    "text": "Top Predictors"
+  },
+  {
+    "objectID": "labs/lab_3/Presentation.html#model-performance",
+    "href": "labs/lab_3/Presentation.html#model-performance",
+    "title": "Modeling Home Sale Prices in Philadelphia",
+    "section": "Model Performance",
+    "text": "Model Performance"
+  },
+  {
+    "objectID": "labs/lab_3/Presentation.html#recommendations",
+    "href": "labs/lab_3/Presentation.html#recommendations",
+    "title": "Modeling Home Sale Prices in Philadelphia",
+    "section": "Recommendations",
+    "text": "Recommendations"
+  },
+  {
+    "objectID": "labs/lab_3/Presentation.html#limitations-next-steps",
+    "href": "labs/lab_3/Presentation.html#limitations-next-steps",
+    "title": "Modeling Home Sale Prices in Philadelphia",
+    "section": "Limitations & Next Steps",
+    "text": "Limitations & Next Steps"
+  },
+  {
+    "objectID": "labs/lab_3/Presentation.html#questions",
+    "href": "labs/lab_3/Presentation.html#questions",
+    "title": "Modeling Home Sale Prices in Philadelphia",
+    "section": "## Questions?",
+    "text": "## Questions?"
+  },
+  {
+    "objectID": "labs/lab_3/Presentation.html#data-sources-contd.",
+    "href": "labs/lab_3/Presentation.html#data-sources-contd.",
+    "title": "Modeling Home Sale Prices in Philadelphia",
+    "section": "Data Sources Contd.",
+    "text": "Data Sources Contd.\nOpenDataPhilly\n\nPhiladelphia Parks and Recreation (PPR) properties for park locations\nSEPTA Bus and Trolley stop locations\nSchools, Hospitals, Restuarants, and Crime Incidents Locations"
+  },
+  {
+    "objectID": "labs/lab_3/Presentation.html#exploring-our-data-where-are-the-expensive-homes",
+    "href": "labs/lab_3/Presentation.html#exploring-our-data-where-are-the-expensive-homes",
+    "title": "Modeling Home Sale Prices in Philadelphia",
+    "section": "Exploring our Data: Where are the Expensive Homes?",
+    "text": "Exploring our Data: Where are the Expensive Homes?"
+  },
+  {
+    "objectID": "labs/lab_3/Presentation.html#where-are-the-expensive-homes",
+    "href": "labs/lab_3/Presentation.html#where-are-the-expensive-homes",
+    "title": "Modeling Home Sale Prices in Philadelphia",
+    "section": "Where are the Expensive Homes?",
+    "text": "Where are the Expensive Homes?"
   }
 ]
