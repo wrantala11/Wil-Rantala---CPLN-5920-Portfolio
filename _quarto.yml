@@ -18,6 +18,8 @@ website:
             text: "Lab 2: Spatial Analysis and Visualization"
           - href: labs/lab_3/Midterm/Presentation.qmd
             text: "Lab 3 Presentation: Modeling Home Sale Prices in Philadelphia"
+          - href: labs/lab_4/lab_4.qmd
+            text: "Lab 4: Spatial Predictive Analysis"
 format:
   html:
     theme: cosmo
