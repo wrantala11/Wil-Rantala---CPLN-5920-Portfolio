@@ -1,0 +1,2 @@
+labs/lab_4/data/potholes.csv filter=lfs diff=lfs merge=lfs -text
+labs/lab_4/data/Street_Lights_Out.geojson filter=lfs diff=lfs merge=lfs -text
