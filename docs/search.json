@@ -425,5 +425,89 @@
     "title": "Lab 2: Spatial Analysis and Visualization",
     "section": "Submission Requirements",
     "text": "Submission Requirements\nWhat to submit:\n\nRendered HTML document posted to your course portfolio with all code, outputs, maps, and text\n\nUse embed-resources: true in YAML so it’s a single file\nAll code should run without errors\nAll maps and charts should display correctly\n\nSubmit the correct and working links of your assignment on Canvas"
+  },
+  {
+    "objectID": "labs/final_model/PPA_Final_Model_Challenge.html#policy-problem-and-context",
+    "href": "labs/final_model/PPA_Final_Model_Challenge.html#policy-problem-and-context",
+    "title": "SEPTA Bus Ridership Prediction",
+    "section": "Policy Problem and Context",
+    "text": "Policy Problem and Context\nBased on predicted ridership, which parts of Philadelphia should SEPTA invest more or less resources?\n\nBetter service riders in underserved areas\nOptimize efficiency to conserve funding during SEPTA’s current fiscal crisis"
+  },
+  {
+    "objectID": "labs/final_model/PPA_Final_Model_Challenge.html#data-sources",
+    "href": "labs/final_model/PPA_Final_Model_Challenge.html#data-sources",
+    "title": "SEPTA Bus Ridership Prediction",
+    "section": "Data Sources",
+    "text": "Data Sources\nSEPTA Bus Stop Summaries — Fall Season\n\n2022, 2023, 2024, 2025\n\nWhy only 2022–2025?\n\nThese years are clearly outside the main pandemic period\nRidership has risen to approximately 80% of pre-pandemic levels\nBetter reflects future ridership trends than earlier pandemic-era data"
+  },
+  {
+    "objectID": "labs/final_model/PPA_Final_Model_Challenge.html#how-are-we-predicting-ridership",
+    "href": "labs/final_model/PPA_Final_Model_Challenge.html#how-are-we-predicting-ridership",
+    "title": "SEPTA Bus Ridership Prediction",
+    "section": "How Are We Predicting Ridership?",
+    "text": "How Are We Predicting Ridership?\nPredictors used across the city at the grid-cell level:\n\nPopulation density\nMedian household income\nVehicle ownership\nDistance to nearest El stop\nJobs within half a mile\nRoad presence"
+  },
+  {
+    "objectID": "labs/final_model/PPA_Final_Model_Challenge.html#data-exploration",
+    "href": "labs/final_model/PPA_Final_Model_Challenge.html#data-exploration",
+    "title": "SEPTA Bus Ridership Prediction",
+    "section": "Data Exploration",
+    "text": "Data Exploration"
+  },
+  {
+    "objectID": "labs/final_model/PPA_Final_Model_Challenge.html#what-models-are-we-using",
+    "href": "labs/final_model/PPA_Final_Model_Challenge.html#what-models-are-we-using",
+    "title": "SEPTA Bus Ridership Prediction",
+    "section": "What Models Are We Using?",
+    "text": "What Models Are We Using?\nWe ran four models of increasing complexity:\nOLS — Baseline linear model\nSpatial Lag — Accounts for spatial autocorrelation in ridership\nPoisson — Standard count model for comparison\nNegative Binomial — Handles overdispersed count data"
+  },
+  {
+    "objectID": "labs/final_model/PPA_Final_Model_Challenge.html#model-comparison",
+    "href": "labs/final_model/PPA_Final_Model_Challenge.html#model-comparison",
+    "title": "SEPTA Bus Ridership Prediction",
+    "section": "Model Comparison",
+    "text": "Model Comparison\n\n\n\nModel\nMAE\nRMSE\n\n\n\n\nOLS(ln_riders)\n1.18\n1.50\n\n\nSpatial Lag(ln_riders)\n1.14\n1.47\n\n\nPoisson\n523\n1475.21\n\n\nNegative Binomial\n523\n1473.69\n\n\n\n\nThe Negative Binomial is our best model\nPoisson assumes mean equals variance — almost never true for ridership data\nThe Negative Binomial’s dispersion parameter better handles overdispersion, producing more trustworthy standard errors and p-values"
+  },
+  {
+    "objectID": "labs/final_model/PPA_Final_Model_Challenge.html#actual-vs.-predicted-ridership",
+    "href": "labs/final_model/PPA_Final_Model_Challenge.html#actual-vs.-predicted-ridership",
+    "title": "SEPTA Bus Ridership Prediction",
+    "section": "Actual vs. Predicted Ridership",
+    "text": "Actual vs. Predicted Ridership"
+  },
+  {
+    "objectID": "labs/final_model/PPA_Final_Model_Challenge.html#limitations-bias-considerations",
+    "href": "labs/final_model/PPA_Final_Model_Challenge.html#limitations-bias-considerations",
+    "title": "SEPTA Bus Ridership Prediction",
+    "section": "Limitations & Bias Considerations",
+    "text": "Limitations & Bias Considerations\nMulticollinearity\n\nPopulation, route count, and nearby jobs are correlated — limits our ability to isolate the effect of any single predictor\n\nModel is Anchored to Current Conditions\n\nPredictions reflect existing ridership under existing infrastructure\nA transit desert predicts low ridership — not because demand is absent, but because supply was never provided\nThis risks reinforcing existing inequities in transit access\nWe excluded cells that contain bus hubs with 10+ lines – these would require their own models"
+  },
+  {
+    "objectID": "labs/final_model/PPA_Final_Model_Challenge.html#recommendations-for-implementation",
+    "href": "labs/final_model/PPA_Final_Model_Challenge.html#recommendations-for-implementation",
+    "title": "SEPTA Bus Ridership Prediction",
+    "section": "Recommendations for Implementation",
+    "text": "Recommendations for Implementation\nHow would the city use our model?\n\n⁠⁠The model can be used for analyzing and identifying areas with higher ridership to create a investment strategies (grid cells with high predicted ridership and low current ridership)\n⁠⁠Consolidate or reduce service in areas where there is low predicted ridership\n⁠⁠Simply use the model to predict future ridership to plan capacity building within SEPTA"
+  },
+  {
+    "objectID": "labs/final_model/PPA_Final_Model_Challenge.html#questions",
+    "href": "labs/final_model/PPA_Final_Model_Challenge.html#questions",
+    "title": "SEPTA Bus Ridership Prediction",
+    "section": "Questions?",
+    "text": "Questions?"
+  },
+  {
+    "objectID": "labs/final_model/PPA_Final_Model_Challenge.html#example-model-implementation",
+    "href": "labs/final_model/PPA_Final_Model_Challenge.html#example-model-implementation",
+    "title": "SEPTA Bus Ridership Prediction",
+    "section": "Example Model Implementation",
+    "text": "Example Model Implementation\n\nPriority determined by predicted ridership minus actual ridership\n\nHigh gap = predicted ridership is much higher than actual\nModerate gap = predicted is slightly more than actual\nSmall gap = predicted is more or less on-par with actual"
+  },
+  {
+    "objectID": "labs/final_model/PPA_Final_Model_Challenge.html#data-exploration-contd.",
+    "href": "labs/final_model/PPA_Final_Model_Challenge.html#data-exploration-contd.",
+    "title": "SEPTA Bus Ridership Prediction",
+    "section": "Data Exploration contd.",
+    "text": "Data Exploration contd."
   }
 ]
