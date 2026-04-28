@@ -20,6 +20,8 @@ website:
             text: "Lab 3 Presentation: Modeling Home Sale Prices in Philadelphia"
           - href: labs/lab_4/lab_4.qmd
             text: "Lab 4: Spatial Predictive Analysis"
+          - href: labs/final_model/PPA_Final_Model_Challenge.qmd
+            text: "Final Challenge: SEPTA Ridership Presentation"
 format:
   html:
     theme: cosmo
